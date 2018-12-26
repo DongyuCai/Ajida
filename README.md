@@ -2,7 +2,7 @@
 
 ##### 服务器的tomcat安装路径下（与webapps同级），新建一个webapps_backup文件夹，用于备份war包，ajida会自动将原war包备份到这里。
 
-##### 如何使用：
+#### 如何使用：
 
 ###### 在项目的pom.xml中添加ajida依赖
  
