@@ -22,19 +22,21 @@ public class ZipUtil {
 	 *            未压缩的文件夹
 	 * @throws Exception
 	 */
-	public static boolean compressDir(File sourceFile,File zipFileName) {
-		boolean flag = false;
+	public static void compressDir(File sourceFile,String zipFileName)throws Exception {
 		ZipOutputStream out = null;
 		try {
 			out = new ZipOutputStream(new FileOutputStream(zipFileName));
 			compressDir(out, sourceFile, "");
-			System.out.println("完成压缩！");
-			out.close();
-			flag = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw e;
+		} finally {
+			if(out != null){
+				try {
+					out.close();
+				} catch (Exception e2) {}
+			}
 		}
-		return flag;
+		
 	}
 
 	/**
@@ -62,7 +64,7 @@ public class ZipUtil {
 			// 压缩目录中的所有文件
 			out.putNextEntry(new ZipEntry(base));
 			FileInputStream in = new FileInputStream(sourceFile);
-			System.out.println(base);
+			Logger.log("compress:"+base);
 			byte[] b = new byte[1024 * 1024];
 			int len = 0;
 			while ((len = in.read(b)) != -1) {
@@ -75,6 +77,10 @@ public class ZipUtil {
 	}
 
 	public static void main(String[] args) {
-		compressDir(new File("D:\\tmp\\test"),new File("D:\\tmp\\xjp-user.war"));
+		try {
+			compressDir(new File("D:\\tmp\\test"),"D:\\tmp\\xjp-user.war");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
