@@ -33,16 +33,12 @@ public class Ajida {
 		}
 	}
 	
-	public static void startTomcat(SSHConfig sshConfig)throws Exception{
+	public static void startTomcat(String tomcatDir,SSHConfig sshConfig)throws Exception{
 		//启动tomcat
 		Logger.log(">>> startup tomcat");
-		String result=SSHUtil.exec(new String[]{
-				"/usr/local/apache-tomcat-9.0.12/bin/startup.sh",
-				"tail -f /usr/local/apache-tomcat-9.0.12/logs/catalina.out"
-				}, 60, sshConfig);// 两分钟没启动完，认为失败
-		if(!result.contains("Server startup in")){
-			throw new Exception("<<< error : tomcat start failed");
-		}
+		SSHUtil.exec(new String[]{
+				tomcatDir+"/bin/startup.sh"
+				}, 60, sshConfig);
 	}
 	
 	/**

@@ -1,7 +1,9 @@
 package com.ajida.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Vector;
 
 import ch.ethz.ssh2.ChannelCondition;
@@ -111,17 +113,36 @@ public class SSHClient {
 	 */
 	public static String exec(Connection conn, String cmd, int timeout) throws Exception {
 		StringBuilder buf = new StringBuilder();
-		InputStream stdOut = null;
-		InputStream stdErr = null;
+		BufferedReader br = null;
+		BufferedReader errorBr = null;
+		
 		try {
 			// 在connection中打开一个新的会话
 			Session session = conn.openSession();
 			// 在远程服务器上执行linux指令
 			session.execCommand(cmd);
 			// 指令执行结束后的输出
-			stdOut = new StreamGobbler(session.getStdout());
+			InputStream inputStream = new StreamGobbler(session.getStdout());
+			br = new BufferedReader(new InputStreamReader(inputStream));
+			String line = null;
+	        buf.setLength(0);
+			while ((line = br.readLine()) != null) {
+	        	Logger.log(line);
+	        	buf.append(line).append("\r\n");
+	        }
+			
 			// 指令执行结束后的错误
-			stdErr = new StreamGobbler(session.getStderr());
+			InputStream errorStream = new StreamGobbler(session.getStderr());
+			errorBr = new BufferedReader(new InputStreamReader(errorStream));
+	        String errorLine = null;
+	        boolean hasError = false;
+	        while ((errorLine = errorBr.readLine()) != null) {
+	        	hasError = true;
+	        	Logger.log(errorLine);
+	        }
+	        if(hasError){
+	        	throw new Exception("!!! has error ...");
+	        }
 			// 等待指令执行结束，毫秒
 			session.waitForCondition(ChannelCondition.EXIT_STATUS, timeout * 1000);
 			// 取得指令执行结束后的状态
@@ -130,37 +151,15 @@ public class SSHClient {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			if (stdOut != null) {
-				byte[] data = new byte[1024];
+			if(br != null){
 				try {
-					int readLen = stdOut.read(data);
-					while (readLen > 0) {
-						buf.append(new String(data));
-						readLen = stdOut.read(data);
-					}
-				} catch (IOException e) {
-				} finally {
-					try {
-						stdOut.close();
-					} catch (IOException e) {
-					}
-				}
+					br.close();
+				} catch (Exception e2) {}
 			}
-			if (stdErr != null) {
-				byte[] data = new byte[1024];
+			if(errorBr != null){
 				try {
-					int readLen = stdErr.read(data);
-					while (readLen > 0) {
-						buf.append(new String(data));
-						readLen = stdErr.read(data);
-					}
-				} catch (IOException e) {
-				} finally {
-					try {
-						stdErr.close();
-					} catch (IOException e) {
-					}
-				}
+					errorBr.close();
+				} catch (Exception e2) {}
 			}
 		}
 

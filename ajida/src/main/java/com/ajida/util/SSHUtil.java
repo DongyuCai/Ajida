@@ -5,10 +5,12 @@ import ch.ethz.ssh2.Connection;
 public class SSHUtil {
 	public static void main(String[] args) {
 		try {
-			String result = SSHUtil.exec(new String[]{
+			/*SSHUtil.exec(new String[]{
 					"cp -n /usr/local/apache-tomcat-9.0.12/webapps/xjp-user.war /usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-user.war_789456"
+			}, 60, new SSHConfig("192.168.199.45", "root", "ybsl1234"));*/
+			SSHUtil.exec(new String[]{
+					"tail -f /usr/local/apache-tomcat-9.0.12/logs/catalina.out"
 			}, 60, new SSHConfig("192.168.199.45", "root", "ybsl1234"));
-			Logger.log(result);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
