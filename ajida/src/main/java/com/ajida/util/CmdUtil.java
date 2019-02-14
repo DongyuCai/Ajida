@@ -31,7 +31,7 @@ public class CmdUtil {
 			Process pop = Runtime.getRuntime().exec(buf.toString());
 	        // 获取其正常的输出流
 			inputStream = pop.getInputStream();
-	        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+	        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "GBK");
 	        BufferedReader br = new BufferedReader(inputStreamReader);
 	        String line = null;
 	        buf.setLength(0);
@@ -42,7 +42,7 @@ public class CmdUtil {
 
 	        // 获取其错误的输出流
 	        errorStream = pop.getErrorStream();
-	        InputStreamReader errorStreamReader = new InputStreamReader(errorStream);
+	        InputStreamReader errorStreamReader = new InputStreamReader(errorStream, "GBK");
 	        BufferedReader errorBr = new BufferedReader(errorStreamReader);
 	        String errorLine = null;
 	        boolean hasError = false;

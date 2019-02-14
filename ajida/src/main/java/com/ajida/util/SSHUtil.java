@@ -17,10 +17,33 @@ public class SSHUtil {
 	}
 	
 	/**
+	 * 获取连接
+	 */
+	public static Connection connect(SSHConfig conf) throws Exception{
+		Connection conn = SSHClient.connect(conf.getIp(),conf.getPort(), conf.getName(), conf.getPassword());
+		return conn;
+	}
+	
+	/**
 	 * 远程执行命令
 	 */
 	public static String exec(String[] commands,int timeout,SSHConfig conf)throws Exception {
 		Connection conn = SSHClient.connect(conf.getIp(),conf.getPort(), conf.getName(), conf.getPassword());
+		try {
+			return exec(commands, timeout, conn);
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			try {
+				conn.close();
+			} catch (Exception e2) {}
+		}
+	}
+	
+	/**
+	 * 远程执行命令
+	 */
+	public static String exec(String[] commands,int timeout,Connection conn)throws Exception {
 		if(conn == null){
 			throw new Exception("连接失败");
 		}
@@ -33,12 +56,7 @@ public class SSHUtil {
 			}
 		} catch (Exception e) {
 			throw e;
-		}finally{
-			try {
-				conn.close();
-			} catch (Exception e2) {}
 		}
-		
 		return buf.toString();
 	}
 	
@@ -47,6 +65,21 @@ public class SSHUtil {
 	 */
 	public static void uploadFile(String localFilePath, String remotePath,SSHConfig conf)throws Exception{
 		Connection conn = SSHClient.connect(conf.getIp(),conf.getPort(), conf.getName(), conf.getPassword());
+		try {
+			uploadFile(localFilePath, remotePath, conn);
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			try {
+				conn.close();
+			} catch (Exception e2) {}
+		}
+	}
+	
+	/**
+	 * 本地文件远程上传
+	 */
+	public static void uploadFile(String localFilePath, String remotePath,Connection conn)throws Exception{
 		if(conn == null){
 			throw new Exception("连接失败");
 		}
@@ -54,10 +87,6 @@ public class SSHUtil {
 			SSHClient.upload(conn, localFilePath, remotePath);
 		} catch (Exception e) {
 			throw e;
-		}finally{
-			try {
-				conn.close();
-			} catch (Exception e2) {}
 		}
 	}
 }
