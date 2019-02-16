@@ -26,6 +26,8 @@ public class Example {
 		
 		//xjp-sdk
 		Ajida.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
+		//xjp-ws
+		Ajida.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
 		
 		//xjp-admin
 		Ajida.javaProjectUpdate(

@@ -72,11 +72,11 @@ public class Ajida {
 					"git pull"
 			};
 			result = CmdUtil.exec(cmds);
-			if(!result.contains("Already up-to-date")){
+			if(!result.contains("Already up")){
 				//第二次尝试，第一次可能有东西更新下来，不会有Already...
 				result = CmdUtil.exec(cmds);
 			}
-			if(!result.contains("Already up-to-date")){
+			if(!result.contains("Already up")){
 				throw new Exception("<<< error : git update failed");
 			}
 			
@@ -116,11 +116,11 @@ public class Ajida {
 					"git pull"
 			};
 			result = CmdUtil.exec(cmds);
-			if(!result.contains("Already up-to-date")){
+			if(!result.contains("Already up")){
 				//第二次尝试，第一次可能有东西更新下来，不会有Already...
 				result = CmdUtil.exec(cmds);
 			}
-			if(!result.contains("Already up-to-date")){
+			if(!result.contains("Already up")){
 				throw new Exception("<<< error : git update failed");
 			}
 			
@@ -185,11 +185,11 @@ public class Ajida {
 					"git pull"
 			};
 			result = CmdUtil.exec(cmds);
-			if(!result.contains("Already up-to-date")){
+			if(!result.contains("Already up")){
 				//第二次尝试，第一次可能有东西更新下来，不会有Already...
 				result = CmdUtil.exec(cmds);
 			}
-			if(!result.contains("Already up-to-date")){
+			if(!result.contains("Already up")){
 				throw new Exception("<<< error : git update failed");
 			}
 			
