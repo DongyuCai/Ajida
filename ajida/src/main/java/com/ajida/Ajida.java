@@ -153,9 +153,11 @@ public class Ajida {
 			Logger.log(">>> 5. backup remote file");
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 			String backupFileName = projectName+".war_"+sdf.format(new Date());
-			SSHUtil.exec(new String[]{
-					"cp -n "+remoteTomcatDir+"/webapps/"+projectName+".war "+remoteTomcatDir+"/webapps_backup/"+backupFileName
-					}, 60, remoteSSHConfig);
+			try {
+				SSHUtil.exec(new String[]{
+						"cp -n "+remoteTomcatDir+"/webapps/"+projectName+".war "+remoteTomcatDir+"/webapps_backup/"+backupFileName
+						}, 60, remoteSSHConfig);
+			} catch (Exception e) {}
 			
 			//6.上传war包
 			Logger.log(">>> 6. upload war file");

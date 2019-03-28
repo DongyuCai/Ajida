@@ -127,7 +127,6 @@ public class SSHClient {
 			String line = null;
 	        buf.setLength(0);
 			while ((line = br.readLine()) != null) {
-	        	Logger.log(line);
 	        	buf.append(line).append("\r\n");
 	        }
 			

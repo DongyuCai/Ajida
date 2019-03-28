@@ -51,7 +51,6 @@ public class SSHUtil {
 		try {
 			for(String cmd:commands){
 				String line = SSHClient.exec(conn, cmd ,timeout);
-	        	Logger.log(line);
 				buf.append(line).append("\r\n");;
 			}
 		} catch (Exception e) {

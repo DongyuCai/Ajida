@@ -35,7 +35,7 @@
 	<dependency>
 		<groupId>org.axe</groupId>
 		<artifactId>axe</artifactId>
-		<version>18.5.29</version>
+		<version>19.2.14</version>
 	</dependency>
 	  	
   </dependencies>
