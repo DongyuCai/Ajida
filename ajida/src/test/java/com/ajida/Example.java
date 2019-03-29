@@ -140,9 +140,8 @@ public class Example {
 			throw new Exception("没有空闲的tomcat节点");
 		}
 		
-		System.out.println("准备更新 tomcat"+targetPoint);
-		
 		//#打包代码，上传到停着的节点
+		System.out.println("准备更新包到tomcat"+targetPoint);
 		//xjp-sdk 依赖包安装
 		Ajida.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
 		//xjp-ws 依赖包安装
@@ -169,17 +168,41 @@ public class Example {
 				"/usr/local/tomcat"+targetPoint,
 				sshConfig);
 		
-		/*Ajida.htmlProjectUpdate(
+		Ajida.htmlProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_pro",
 				"/var/html", 
-				sshConfig);*/
+				sshConfig);
 		
 		//#启动停着的节点
+		System.out.println("尝试启动tomcat"+targetPoint);
 		SSHUtil.exec(new String[]{
 				"/usr/local/tomcat"+targetPoint+"/bin/startup.sh"
 				}, 60, sshConfig);
-		System.out.println("启动tomcat"+targetPoint);
+		//监控tomcat启动结果，这里等待10分钟，如果10分钟都没启动成功，则启动失败，不做后续的nignx切换和tomcat停机
+		int waitSec = 10*60;
+		boolean tomcatStartSuccess = false;
+		String tailResult = "";
+		for(int i=0;i<waitSec;i++){
+			String execResult = SSHUtil.exec(new String[]{
+					"tail -n 1 /usr/local/tomcat"+targetPoint+"/logs/catalina.out"
+					}, 60, sshConfig);
+			execResult = execResult !=null?execResult.trim():"";
+			if(!tailResult.equals(execResult)){
+				System.out.println(execResult);
+				tailResult = execResult;
+			}
+			if(tailResult != null && tailResult.contains("Server startup in")){
+				tomcatStartSuccess = true;
+				break;
+			}
+			Thread.sleep(1000);
+		}
+		if(tomcatStartSuccess){
+			System.out.println("tomcat"+targetPoint+" 启动成功");
+		}else{
+			throw new Exception("tomcat"+targetPoint+" 启动失败！");
+		}
 		
 		//#切换nginx配置到新启动的节点
 		SSHUtil.exec(new String[]{
@@ -204,6 +227,7 @@ public class Example {
 						}, 60, sshConfig);
 				pid = pid !=null?pid.trim():"";
 			}
+
 			System.out.println("停止tomcat"+runningPoint);
 		}
 		
