@@ -1,18 +1,130 @@
 package com.ajida;
 
+import java.io.File;
 import java.util.Scanner;
 
+import org.axe.util.FileUtil;
 import org.axe.util.StringUtil;
 
+import com.ajida.util.CmdUtil;
+import com.ajida.util.Logger;
 import com.ajida.util.SSHConfig;
 import com.ajida.util.SSHUtil;
+import com.ajida.util.ZipUtil;
 
 public class Example {
 	public static void main(String[] args) {
 		try {
-//			xjp_45();
+			xjp_45();
 //			xjp_114();
-			xjp_114_hot();
+//			xjp_114_hot();
+
+//			xjp_user_45();
+//			xjp_user_114();
+			/*
+			for(int i=1;i<1000;i++){
+				int result = (i+2)%2;
+				
+			}*/
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void xjp_user_45(){
+		String projectDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user";
+		String configDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user\\xjp-user\\build\\js\\conf_test";
+		
+		String[] cmds = null;
+		String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
+		try {
+			//1.清理
+			Logger.log(">>> 1. clean folder");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"rd /s /q "+projectName,
+					"del /f /s /q "+projectName+".zip"
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
+			
+			//2.fis 打包
+			Logger.log(">>> 2. fis relase");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"fis3 release build -d ./"+projectName+"/build"
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
+			
+			//3.拷贝配置文件
+			Logger.log(">>> 3. copy config files");
+			String[] resourceFileList = new File(configDir).list();
+			for(String rf:resourceFileList){
+				FileUtil.copy(configDir+"\\"+rf, configDir+"\\..");
+				Logger.log("copy:"+configDir+"\\"+rf);
+			}
+			
+			//4.压缩打包
+			Logger.log(">>> 4. compress files to zip");
+			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip");
+
+			//5.上传
+			
+			
+			//6.录入新版本信息
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void xjp_user_114(){
+		String projectDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user";
+		String configDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user\\xjp-user\\build\\js\\conf_pro";
+		
+		String[] cmds = null;
+		String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
+		try {
+			//1.清理
+			Logger.log(">>> 1. clean folder");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"rd /s /q "+projectName,
+					"del /f /s /q "+projectName+".zip"
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
+			
+			//2.fis 打包
+			Logger.log(">>> 2. fis relase");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"fis3 release build -d ./"+projectName+"/build"
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
+			
+			//3.拷贝配置文件
+			Logger.log(">>> 3. copy config files");
+			String[] resourceFileList = new File(configDir).list();
+			for(String rf:resourceFileList){
+				FileUtil.copy(configDir+"\\"+rf, configDir+"\\..");
+				Logger.log("copy:"+configDir+"\\"+rf);
+			}
+			
+			//4.压缩打包
+			Logger.log(">>> 4. compress files to zip");
+			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip");
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

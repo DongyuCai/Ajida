@@ -194,15 +194,26 @@ public class Ajida {
 			if(!result.contains("Already up")){
 				throw new Exception("<<< error : git update failed");
 			}
+
+			//1.清理
+			Logger.log(">>> 1. clean folder");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"rd /s /q "+projectName,
+					"del /f /s /q "+projectName+".zip"
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
 			
+
 			//2.fis 打包
 			Logger.log(">>> 2. fis relase");
 			cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
-					"del /f /s /q "+projectName,
-					"del /f /s /q "+projectName+".zip",
-					"fis3 release build -d ./"+projectName
+					"fis3 release build -d ./"+projectName+"/build"
 			};
 			try {
 				CmdUtil.exec(cmds);
@@ -242,6 +253,20 @@ public class Ajida {
 					"unzip -d "+remoteBaseDir+"/"+projectName+" "+remoteBaseDir+"/"+projectName+".zip",
 					"rm -rf "+remoteBaseDir+"/"+projectName+".zip"
 					}, 60, remoteSSHConfig);
+			
+			
+
+			//8.清理
+			Logger.log(">>> 8. clean folder again");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"rd /s /q "+projectName,
+					"del /f /s /q "+projectName+".zip"
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
 			
 		} catch (Exception e) {
 			throw e;
