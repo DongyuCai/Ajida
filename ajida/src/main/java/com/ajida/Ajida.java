@@ -65,7 +65,7 @@ public class Ajida {
 			
 			//================================本地跟新包准备================================
 			//1.git更新
-			Logger.log(">>> 1. git update");
+			/*Logger.log(">>> 1. git update");
 			cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
@@ -78,7 +78,7 @@ public class Ajida {
 			}
 			if(!result.contains("Already up")){
 				throw new Exception("<<< error : git update failed");
-			}
+			}*/
 			
 			//2.maven 打包
 			Logger.log(">>> 2. maven install");
@@ -109,7 +109,7 @@ public class Ajida {
 			
 			//================================本地跟新包准备================================
 			//1.git更新
-			Logger.log(">>> 1. git update");
+			/*Logger.log(">>> 1. git update");
 			cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
@@ -122,7 +122,7 @@ public class Ajida {
 			}
 			if(!result.contains("Already up")){
 				throw new Exception("<<< error : git update failed");
-			}
+			}*/
 			
 			//2.maven 打包
 			Logger.log(">>> 2. maven package");
@@ -207,13 +207,12 @@ public class Ajida {
 				CmdUtil.exec(cmds);
 			} catch (Exception e) {}
 			
-
 			//2.fis 打包
 			Logger.log(">>> 2. fis relase");
 			cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
-					"fis3 release build -d ./"+projectName+"/build"
+					"fis3 release build -d ./"+projectName
 			};
 			try {
 				CmdUtil.exec(cmds);

@@ -15,9 +15,9 @@ import com.ajida.util.ZipUtil;
 public class Example {
 	public static void main(String[] args) {
 		try {
-			xjp_45();
+//			xjp_45();
 //			xjp_114();
-//			xjp_114_hot();
+			xjp_114_hot();
 
 //			xjp_user_45();
 //			xjp_user_114();
@@ -26,6 +26,14 @@ public class Example {
 				int result = (i+2)%2;
 				
 			}*/
+			
+			//tomcat路径下静态资源要放到线上
+			//定时任务
+			//数据脚本，activity_prize的prize_type要刷
+			//1.组队签到
+			//2.配置抽奖
+			//3.后台两个订单查询页面
+			//4.新的邀请好友宣传页
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -137,7 +145,7 @@ public class Example {
 		sc.close();
 		
 		SSHConfig sshConfig = new SSHConfig("192.168.199.45", "root", password);
-		
+		/*
 		Ajida.stopTomcat(sshConfig);
 		
 		//xjp-sdk
@@ -167,7 +175,7 @@ public class Example {
 				sshConfig);
 		
 		Ajida.startTomcat("/usr/local/apache-tomcat-9.0.12",sshConfig);
-		
+		*/
 		
 		Ajida.htmlProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
@@ -252,6 +260,7 @@ public class Example {
 			throw new Exception("没有空闲的tomcat节点");
 		}
 		
+		
 		//#打包代码，上传到停着的节点
 		System.out.println("准备更新包到tomcat"+targetPoint);
 		//xjp-sdk 依赖包安装
@@ -279,6 +288,7 @@ public class Example {
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\pro"+targetPoint,
 				"/usr/local/tomcat"+targetPoint,
 				sshConfig);
+		
 		
 		Ajida.htmlProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
