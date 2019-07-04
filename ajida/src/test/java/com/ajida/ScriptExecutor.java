@@ -12,7 +12,7 @@ import com.ajida.util.SSHConfig;
 import com.ajida.util.SSHUtil;
 import com.ajida.util.ZipUtil;
 
-public class Example {
+public class ScriptExecutor {
 	public static void main(String[] args) {
 		try {
 //			xjp_45();
@@ -177,56 +177,11 @@ public class Example {
 		Ajida.startTomcat("/usr/local/apache-tomcat-9.0.12",sshConfig);
 		*/
 		
-		Ajida.htmlProjectUpdate(
+		Script.htmlProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_test",
 				"/usr/nginx/html", 
 				sshConfig);
-	}
-	
-	public static void xjp_114() throws Exception{
-		System.out.println("enter password:");
-		Scanner sc = new Scanner(System.in);
-		String password = sc.nextLine();
-		sc.close();
-		
-		SSHConfig sshConfig = new SSHConfig("114.218.158.239", "root", password);
-		Ajida.stopTomcat(sshConfig);
-		
-		//xjp-sdk
-		Ajida.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
-		//xjp-ws
-		Ajida.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
-		
-		//xjp-admin
-		Ajida.javaProjectUpdate(
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\config\\pro",
-				"/usr/local/apache-tomcat-9.0.13",
-				sshConfig);
-
-		//xjp-collector
-		Ajida.javaProjectUpdate(
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector",
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\config\\pro",
-				"/usr/local/apache-tomcat-9.0.13",
-				sshConfig);
-		
-		//xjp-user
-		Ajida.javaProjectUpdate(
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user",
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\pro",
-				"/usr/local/apache-tomcat-9.0.13",
-				sshConfig);
-		
-		Ajida.startTomcat("/usr/local/apache-tomcat-9.0.13",sshConfig);
-		
-		Ajida.htmlProjectUpdate(
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_pro",
-				"/var/html", 
-				sshConfig);
-		
 	}
 	
 	public static void xjp_114_hot() throws Exception{
@@ -243,9 +198,7 @@ public class Example {
 		String targetPoint = "";//目标更新节点
 		String runningPoint = "";//先在正在运行的节点
 		for(String flag:points){
-			String pid = SSHUtil.exec(new String[]{
-					"ps -ef | grep /usr/local/tomcat"+flag+" | grep java | grep -v grep | awk '{print $2}'"
-			}, 60, sshConfig);
+			String pid = SSHUtil.exec(sshConfig,"ps -ef | grep /usr/local/tomcat"+flag+" | grep java | grep -v grep | awk '{print $2}'",10);
 			pid = pid !=null?pid.trim():"";
 			
 			if(StringUtil.isEmpty(pid)){
@@ -264,33 +217,33 @@ public class Example {
 		//#打包代码，上传到停着的节点
 		System.out.println("准备更新包到tomcat"+targetPoint);
 		//xjp-sdk 依赖包安装
-		Ajida.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
+		Script.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
 		//xjp-ws 依赖包安装
-		Ajida.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
+		Script.javaSdkInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
 		
 		//xjp-admin
-		Ajida.javaProjectUpdate(
+		Script.javaProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\config\\pro",
 				"/usr/local/tomcat"+targetPoint,
 				sshConfig);
 
 		//xjp-collector
-		Ajida.javaProjectUpdate(
+		Script.javaProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\config\\pro",
 				"/usr/local/tomcat"+targetPoint,
 				sshConfig);
 		
 		//xjp-user
-		Ajida.javaProjectUpdate(
+		Script.javaProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\pro"+targetPoint,
 				"/usr/local/tomcat"+targetPoint,
 				sshConfig);
 		
 		
-		Ajida.htmlProjectUpdate(
+		Script.htmlProjectUpdate(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_pro",
 				"/var/html", 
@@ -298,17 +251,13 @@ public class Example {
 		
 		//#启动停着的节点
 		System.out.println("尝试启动tomcat"+targetPoint);
-		SSHUtil.exec(new String[]{
-				"/usr/local/tomcat"+targetPoint+"/bin/startup.sh"
-				}, 60, sshConfig);
+		SSHUtil.exec(sshConfig,"/usr/local/tomcat"+targetPoint+"/bin/startup.sh",10);
 		//监控tomcat启动结果，这里等待10分钟，如果10分钟都没启动成功，则启动失败，不做后续的nignx切换和tomcat停机
 		int waitSec = 10*60;
 		boolean tomcatStartSuccess = false;
 		String tailResult = "";
 		for(int i=0;i<waitSec;i++){
-			String execResult = SSHUtil.exec(new String[]{
-					"tail -n 1 /usr/local/tomcat"+targetPoint+"/logs/catalina.out"
-					}, 60, sshConfig);
+			String execResult = SSHUtil.exec(sshConfig,"tail -n 1 /usr/local/tomcat"+targetPoint+"/logs/catalina.out",10);
 			execResult = execResult !=null?execResult.trim():"";
 			if(!tailResult.equals(execResult)){
 				System.out.println(execResult);
@@ -327,26 +276,20 @@ public class Example {
 		}
 		
 		//#切换nginx配置到新启动的节点
-		SSHUtil.exec(new String[]{
+		SSHUtil.exec(sshConfig,new String[]{
 				//需要复制节点ngix配置文件
 				"cp -f /etc/nginx/loadbalance/nginx"+targetPoint+".conf /etc/nginx/nginx.conf",
 				"/usr/sbin/nginx -s reload"
-				}, 60, sshConfig);
+				},10);
 		System.out.println("切换nginx反向代理端口");
 		
 		//#停掉老的节点
 		if(StringUtil.isNotEmpty(runningPoint)){
-			String pid = SSHUtil.exec(new String[]{
-					"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'"
-					}, 60, sshConfig);
+			String pid = SSHUtil.exec(sshConfig,"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'",10);
 			pid = pid !=null?pid.trim():"";
 			while(StringUtil.isNotEmpty(pid)){
-				SSHUtil.exec(new String[]{
-					"kill -9 "+pid
-				} ,60,sshConfig);
-				pid = SSHUtil.exec(new String[]{
-						"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'"
-						}, 60, sshConfig);
+				SSHUtil.exec(sshConfig,"kill -9 "+pid,10);
+				pid = SSHUtil.exec(sshConfig,"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'",10);
 				pid = pid !=null?pid.trim():"";
 			}
 

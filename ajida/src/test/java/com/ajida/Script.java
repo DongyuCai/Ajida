@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.axe.util.FileUtil;
-import org.axe.util.StringUtil;
 
 import com.ajida.util.CmdUtil;
 import com.ajida.util.Logger;
@@ -13,7 +12,7 @@ import com.ajida.util.SSHConfig;
 import com.ajida.util.SSHUtil;
 import com.ajida.util.ZipUtil;
 
-public class Ajida {
+public class Script {
 	public static void main(String[] args) {
 		try {
 			htmlProjectUpdate(
@@ -30,32 +29,6 @@ public class Ajida {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void stopTomcat(SSHConfig sshConfig)throws Exception{
-		//停止服务器
-		Logger.log(">>> stop tomcat");
-		String result = SSHUtil.exec(new String[]{
-				"ps -ef | grep tomcat | grep java | grep -v grep | awk '{print $2}'"
-				}, 60, sshConfig);
-		result = result !=null?result.trim():"";
-		while(StringUtil.isNotEmpty(result)){
-			SSHUtil.exec(new String[]{
-				"kill -9 "+result
-			} ,60,sshConfig);
-			result = SSHUtil.exec(new String[]{
-					"ps -ef | grep tomcat | grep java | grep -v grep | awk '{print $2}'"
-					}, 60, sshConfig);
-			result = result !=null?result.trim():"";
-		}
-	}
-	
-	public static void startTomcat(String tomcatDir,SSHConfig sshConfig)throws Exception{
-		//启动tomcat
-		Logger.log(">>> startup tomcat");
-		SSHUtil.exec(new String[]{
-				tomcatDir+"/bin/startup.sh"
-				}, 60, sshConfig);
 	}
 	
 	public static void javaSdkInstall(String projectDir) throws Exception{
@@ -154,9 +127,7 @@ public class Ajida {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 			String backupFileName = projectName+".war_"+sdf.format(new Date());
 			try {
-				SSHUtil.exec(new String[]{
-						"cp -n "+remoteTomcatDir+"/webapps/"+projectName+".war "+remoteTomcatDir+"/webapps_backup/"+backupFileName
-						}, 60, remoteSSHConfig);
+				SSHUtil.exec(remoteSSHConfig,"cp -n "+remoteTomcatDir+"/webapps/"+projectName+".war "+remoteTomcatDir+"/webapps_backup/"+backupFileName,10);
 			} catch (Exception e) {}
 			
 			//6.上传war包
@@ -240,18 +211,16 @@ public class Ajida {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 			String backupFileName = projectName+"_"+sdf.format(new Date());
 			try {
-				SSHUtil.exec(new String[]{
-						"mv "+remoteBaseDir+"/"+projectName+" "+remoteBaseDir+"/"+backupFileName
-						}, 60, remoteSSHConfig);
+				SSHUtil.exec(remoteSSHConfig,"mv "+remoteBaseDir+"/"+projectName+" "+remoteBaseDir+"/"+backupFileName,10);
 			} catch (Exception e) {}
 			
 			
 			//7.解压缩，删除zip包
 			Logger.log(">>> 7. unzip zip and rm zip");
-			SSHUtil.exec(new String[]{
+			SSHUtil.exec(remoteSSHConfig,new String[]{
 					"unzip -d "+remoteBaseDir+"/"+projectName+" "+remoteBaseDir+"/"+projectName+".zip",
 					"rm -rf "+remoteBaseDir+"/"+projectName+".zip"
-					}, 60, remoteSSHConfig);
+					},10);
 			
 			
 
@@ -271,40 +240,5 @@ public class Ajida {
 			throw e;
 		}
 	}
-	
-	/*public static void update(String resourceDir, String targetDir, String project, String linuxIp, String linuxUsername, String linuxPassword, String tomcatDir, boolean restartTomcat) throws Exception{
-		//拷贝配置文件
-		String[] resourceFileList = new File(resourceDir).list();
-		for(String rf:resourceFileList){
-			FileUtil.copy(resourceDir+"\\"+rf, targetDir+project+"\\WEB-INF\\classes");
-			System.out.println("成功拷贝"+rf);
-		}
-		
-		ZipUtil.compressDir(new File(targetDir+project), new File(targetDir+project+".war"));
-		//建立远程连接
-		Connection conn = SSHClient.connect(linuxIp,22, linuxUsername, linuxPassword);
-		//备份远程文件
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
-		String backupFileName = project.substring(1)+".war_"+sdf.format(new Date());
-		SSHClient.exec(conn, "cp -n "+tomcatDir+"/webapps/"+project.substring(1)+".war "+tomcatDir+"/webapps_backup/"+backupFileName+".war ", 10);
-		System.out.println("备份"+tomcatDir+"/webapps/"+project.substring(1)+".war "+tomcatDir+"/webapps_backup/"+backupFileName+".war ");
-		//获取tomcat pid并杀掉
-		String pid = SSHClient.exec(conn, "ps -ef | grep tomcat | grep java | grep -v grep | awk '{print $2}'" ,20);
-		pid = pid !=null?pid.trim():"";
-		while(StringUtil.isNotEmpty(pid)){
-			System.out.println("停止tomcat进程"+pid);
-			SSHClient.exec(conn, "kill -9 "+pid ,10);
-			pid = SSHClient.exec(conn, "ps -ef | grep tomcat | grep java | grep -v grep | awk '{print $2}'" ,20);
-			pid = pid !=null?pid.trim():"";
-		}
-		//上传war包
-		SSHClient.upload(conn, targetDir+project+".war", tomcatDir+"/webapps");
-		if(restartTomcat){
-			//启动tomcat
-			System.out.println("重启tomcat");
-			SSHClient.exec(conn, tomcatDir+"/bin/startup.sh" ,20);
-		}
-		conn.close();
-	}*/
 	
 }

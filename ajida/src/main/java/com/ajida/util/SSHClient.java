@@ -111,42 +111,42 @@ public class SSHClient {
 	 *            超时秒数
 	 * @throws Exception
 	 */
-	public static String exec(Connection conn, String cmd, int timeout) throws Exception {
+	public static String exec(Connection conn, String cmd, int timeout, boolean needOutput) throws Exception {
 		StringBuilder buf = new StringBuilder();
 		BufferedReader br = null;
 		BufferedReader errorBr = null;
-		
+		Session sess = null;
 		try {
-			// 在connection中打开一个新的会话
-			Session session = conn.openSession();
+			sess = conn.openSession();
 			// 在远程服务器上执行linux指令
-			session.execCommand(cmd);
-			// 指令执行结束后的输出
-			InputStream inputStream = new StreamGobbler(session.getStdout());
-			br = new BufferedReader(new InputStreamReader(inputStream));
-			String line = null;
-	        buf.setLength(0);
-			while ((line = br.readLine()) != null) {
-	        	buf.append(line).append("\r\n");
-	        }
-			
-			// 指令执行结束后的错误
-			InputStream errorStream = new StreamGobbler(session.getStderr());
-			errorBr = new BufferedReader(new InputStreamReader(errorStream));
-	        String errorLine = null;
+			sess.execCommand(cmd);
 	        boolean hasError = false;
-	        while ((errorLine = errorBr.readLine()) != null) {
-	        	hasError = true;
-	        	Logger.log(errorLine);
-	        }
-	        if(hasError){
-	        	throw new Exception("!!! has error ...");
-	        }
+			if(needOutput){
+				// 指令执行结束后的输出
+				InputStream inputStream = new StreamGobbler(sess.getStdout());
+				br = new BufferedReader(new InputStreamReader(inputStream));
+				String line = null;
+		        buf.setLength(0);
+				while ((line = br.readLine()) != null) {
+		        	buf.append(line).append("\r\n");
+		        }
+				
+				// 指令执行结束后的错误
+				InputStream errorStream = new StreamGobbler(sess.getStderr());
+				errorBr = new BufferedReader(new InputStreamReader(errorStream));
+		        String errorLine = null;
+		        while ((errorLine = errorBr.readLine()) != null) {
+		        	buf.append(errorLine).append("\r\n");
+		        	hasError = true;
+		        }
+			}
 			// 等待指令执行结束，毫秒
-			session.waitForCondition(ChannelCondition.EXIT_STATUS, timeout * 1000);
+	        sess.waitForCondition(ChannelCondition.EXIT_STATUS, timeout * 1000);
 			// 取得指令执行结束后的状态
-			// session.getExitStatus();
-			session.close();
+//			System.out.println(session.getExitStatus());
+	        if(hasError){
+	        	throw new Exception(buf.toString());
+	        }
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -158,6 +158,11 @@ public class SSHClient {
 			if(errorBr != null){
 				try {
 					errorBr.close();
+				} catch (Exception e2) {}
+			}
+			if(sess != null){
+				try {
+					sess.close();
 				} catch (Exception e2) {}
 			}
 		}
