@@ -1,29 +1,17 @@
 package com.ajida;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
-import org.axe.util.FileUtil;
 import org.axe.util.StringUtil;
-
-import com.ajida.CmdUtil;
-import com.ajida.Logger;
-import com.ajida.SSHConfig;
-import com.ajida.SSHUtil;
-import com.ajida.ScriptUtil;
-import com.ajida.ZipUtil;
 
 public class ScriptExecutor {
 	public static void main(String[] args) {
 		try {
 //			xjp_45();
-//			xjp_114();
 			xjp_114_hot();
 
-//			xjp_user_45();
-//			xjp_user_114();
 			/*
 			for(int i=1;i<1000;i++){
 				int result = (i+2)%2;
@@ -42,104 +30,6 @@ public class ScriptExecutor {
 		}
 	}
 	
-	public static void xjp_user_45(){
-		String projectDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user";
-		String configDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user\\xjp-user\\build\\js\\conf_test";
-		
-		String[] cmds = null;
-		String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
-		try {
-			//1.清理
-			Logger.log(">>> 1. clean folder");
-			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"rd /s /q "+projectName,
-					"del /f /s /q "+projectName+".zip"
-			};
-			try {
-				CmdUtil.exec(cmds);
-			} catch (Exception e) {}
-			
-			//2.fis 打包
-			Logger.log(">>> 2. fis relase");
-			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"fis3 release build -d ./"+projectName+"/build"
-			};
-			try {
-				CmdUtil.exec(cmds);
-			} catch (Exception e) {}
-			
-			//3.拷贝配置文件
-			Logger.log(">>> 3. copy config files");
-			String[] resourceFileList = new File(configDir).list();
-			for(String rf:resourceFileList){
-				FileUtil.copy(configDir+"\\"+rf, configDir+"\\..");
-				Logger.log("copy:"+configDir+"\\"+rf);
-			}
-			
-			//4.压缩打包
-			Logger.log(">>> 4. compress files to zip");
-			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip");
-
-			//5.上传
-			
-			
-			//6.录入新版本信息
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void xjp_user_114(){
-		String projectDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user";
-		String configDir = "D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-user\\xjp-user\\build\\js\\conf_pro";
-		
-		String[] cmds = null;
-		String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
-		try {
-			//1.清理
-			Logger.log(">>> 1. clean folder");
-			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"rd /s /q "+projectName,
-					"del /f /s /q "+projectName+".zip"
-			};
-			try {
-				CmdUtil.exec(cmds);
-			} catch (Exception e) {}
-			
-			//2.fis 打包
-			Logger.log(">>> 2. fis relase");
-			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"fis3 release build -d ./"+projectName+"/build"
-			};
-			try {
-				CmdUtil.exec(cmds);
-			} catch (Exception e) {}
-			
-			//3.拷贝配置文件
-			Logger.log(">>> 3. copy config files");
-			String[] resourceFileList = new File(configDir).list();
-			for(String rf:resourceFileList){
-				FileUtil.copy(configDir+"\\"+rf, configDir+"\\..");
-				Logger.log("copy:"+configDir+"\\"+rf);
-			}
-			
-			//4.压缩打包
-			Logger.log(">>> 4. compress files to zip");
-			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 	public static void xjp_45() throws Exception{
 		System.out.println("enter password:");
@@ -160,43 +50,43 @@ public class ScriptExecutor {
 		System.out.println("停止tomcat");
 		
 		//git更新
-		ScriptUtil.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java");
+		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java");
 		
 		//mvn安装sdk工程
-		ScriptUtil.mvnInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
-		ScriptUtil.mvnInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
+		Ajida.mvnInstallJar("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
+		Ajida.mvnInstallJar("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
 		
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 		//########################xjp-admin
 		//mvn打包工程
-		ScriptUtil.mvnPackage(
+		Ajida.mvnPackageWar(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\config\\test");
 		//备份远程文件
-		ScriptUtil.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-admin.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-admin.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-admin.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-admin.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		ScriptUtil.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-admin.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-admin.war", sshConfig);
 
 		//########################xjp-collector
 		//mvn打包工程
-		ScriptUtil.mvnPackage(
+		Ajida.mvnPackageWar(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\config\\test");
 		//备份远程文件
-		ScriptUtil.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-collector.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-collector.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		ScriptUtil.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-collector.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-collector.war", sshConfig);
 
 		//########################xjp-user
 		//mvn打包工程
-		ScriptUtil.mvnPackage(
+		Ajida.mvnPackageWar(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\test");
 		//备份远程文件
-		ScriptUtil.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-user.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-user.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-user.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-user.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		ScriptUtil.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-user.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-user.war", sshConfig);
 
 		//启动tomcat
 		System.out.println("尝试启动tomcat");
@@ -224,11 +114,29 @@ public class ScriptExecutor {
 			throw new Exception("tomcat 启动失败！");
 		}
 		
-		ScriptUtil.htmlProjectUpdate(
+		//更新前端工程
+		//git更新
+		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
+		
+		Ajida.htmlPackageZip(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_test",
-				"/usr/nginx/html", 
-				sshConfig);
+				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_test");
+		//上传新的包
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin.zip", "/usr/nginx/html/xjp-admin.zip", sshConfig);
+		//备份远程文件
+		SSHUtil.exec(sshConfig,"mv "+"/usr/nginx/html/xjp-admin /usr/nginx/html/xjp-admin_"+sdf.format(new Date()),10);
+		//解压缩远程压缩包
+		Ajida.unzipRemotFile("/usr/nginx/html/xjp-admin.zip", "/usr/nginx/html/xjp-admin", sshConfig);
+		//清理
+		Logger.log(">>> clean folder again");
+		String[] cmds = new String[]{
+				"cd D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin",
+				"D:",
+				"rd /s /q xjp-admin",
+				"del /f /s /q xjp-admin.zip"
+		};
+		CmdUtil.exec(cmds);
+		
 	}
 	
 	public static void xjp_114_hot() throws Exception{
@@ -266,50 +174,43 @@ public class ScriptExecutor {
 		
 
 		//git更新
-		ScriptUtil.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java");
+		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java");
 		
 		//mvn依赖包安装
-		ScriptUtil.mvnInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
-		ScriptUtil.mvnInstall("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
+		Ajida.mvnInstallJar("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-sdk");
+		Ajida.mvnInstallJar("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 		//########################xjp-admin
 		//mvn打包工程
-		ScriptUtil.mvnPackage(
+		Ajida.mvnPackageWar(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\config\\pro");
 		//备份远程文件
-		ScriptUtil.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-admin.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-admin.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		ScriptUtil.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war", sshConfig);
 
 		//########################xjp-admin
 		//mvn打包工程
-		ScriptUtil.mvnPackage(
+		Ajida.mvnPackageWar(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\config\\pro");
 		//备份远程文件
-		ScriptUtil.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		ScriptUtil.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war", sshConfig);
 
 		//########################xjp-admin
 		//mvn打包工程
-		ScriptUtil.mvnPackage(
+		Ajida.mvnPackageWar(
 			"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user",
 			"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\pro"+targetPoint);
 		//备份远程文件
-		ScriptUtil.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-user.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-user.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		ScriptUtil.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war", sshConfig);
 
-		
-		ScriptUtil.htmlProjectUpdate(
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
-				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_pro",
-				"/var/html", 
-				sshConfig);
-		
 		//#启动停着的节点
 		System.out.println("尝试启动tomcat"+targetPoint);
 		SSHUtil.exec(sshConfig,"/usr/local/tomcat"+targetPoint+"/bin/startup.sh",10);
@@ -356,6 +257,29 @@ public class ScriptExecutor {
 
 			System.out.println("停止tomcat"+runningPoint);
 		}
+		
+		//更新前端工程
+		//git更新
+		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
+		
+		Ajida.htmlPackageZip(
+				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
+				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_pro");
+		//上传新的包
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin.zip", "/var/html/xjp-admin.zip", sshConfig);
+		//备份远程文件
+		SSHUtil.exec(sshConfig,"mv "+"/var/html/xjp-admin /var/html/xjp-admin_"+sdf.format(new Date()),10);
+		//解压缩远程压缩包
+		Ajida.unzipRemotFile("/var/html/xjp-admin.zip", "/var/html/xjp-admin", sshConfig);
+		//清理
+		Logger.log(">>> clean folder again");
+		String[] cmds = new String[]{
+				"cd D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin",
+				"D:",
+				"rd /s /q xjp-admin",
+				"del /f /s /q xjp-admin.zip"
+		};
+		CmdUtil.exec(cmds);
 		
 	}
 
