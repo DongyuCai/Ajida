@@ -1,4 +1,4 @@
-package com.ajida.util;
+package com.ajida;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

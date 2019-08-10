@@ -8,12 +8,12 @@ import java.util.Scanner;
 import org.axe.util.FileUtil;
 import org.axe.util.StringUtil;
 
-import com.ajida.util.CmdUtil;
-import com.ajida.util.Logger;
-import com.ajida.util.SSHConfig;
-import com.ajida.util.SSHUtil;
-import com.ajida.util.ScriptUtil;
-import com.ajida.util.ZipUtil;
+import com.ajida.CmdUtil;
+import com.ajida.Logger;
+import com.ajida.SSHConfig;
+import com.ajida.SSHUtil;
+import com.ajida.ScriptUtil;
+import com.ajida.ZipUtil;
 
 public class ScriptExecutor {
 	public static void main(String[] args) {

@@ -1,4 +1,4 @@
-package com.ajida.util;
+package com.ajida;
 
 public class Logger {
 	public static void log(String log){

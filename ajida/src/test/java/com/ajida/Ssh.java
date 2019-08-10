@@ -6,8 +6,8 @@ import java.util.Scanner;
 
 import org.axe.util.StringUtil;
 
-import com.ajida.util.SSHConfig;
-import com.ajida.util.SSHUtil;
+import com.ajida.SSHConfig;
+import com.ajida.SSHUtil;
 
 import ch.ethz.ssh2.Connection;
 

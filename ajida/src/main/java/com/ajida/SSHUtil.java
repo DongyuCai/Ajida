@@ -1,4 +1,4 @@
-package com.ajida.util;
+package com.ajida;
 
 import java.util.List;
 
