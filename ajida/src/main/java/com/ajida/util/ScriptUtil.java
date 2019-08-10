@@ -1,4 +1,4 @@
-package com.ajida;
+package com.ajida.util;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -6,13 +6,7 @@ import java.util.Date;
 
 import org.axe.util.FileUtil;
 
-import com.ajida.util.CmdUtil;
-import com.ajida.util.Logger;
-import com.ajida.util.SSHConfig;
-import com.ajida.util.SSHUtil;
-import com.ajida.util.ZipUtil;
-
-public class Script {
+public class ScriptUtil {
 	public static void main(String[] args) {
 		try {
 			htmlProjectUpdate(
@@ -31,42 +25,36 @@ public class Script {
 		}
 	}
 	
-	public static void javaSdkInstall(String projectDir) throws Exception{
-		try {
-			String result = "";
-			String[] cmds = null;
-			
-			//================================本地跟新包准备================================
-			//1.git更新
-			/*Logger.log(">>> 1. git update");
-			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"git pull"
-			};
+	public static void gitPull(String projectDir) throws Exception{
+		//1.git更新
+		Logger.log(">>> git update");
+		String[] cmds = new String[]{
+				"cd "+projectDir,
+				projectDir.substring(0,2),
+				"git pull"
+		};
+		String result = CmdUtil.exec(cmds);
+		if(!result.contains("Already up")){
+			//第二次尝试，第一次可能有东西更新下来，不会有Already...
 			result = CmdUtil.exec(cmds);
-			if(!result.contains("Already up")){
-				//第二次尝试，第一次可能有东西更新下来，不会有Already...
-				result = CmdUtil.exec(cmds);
-			}
-			if(!result.contains("Already up")){
-				throw new Exception("<<< error : git update failed");
-			}*/
-			
-			//2.maven 打包
-			Logger.log(">>> 2. maven install");
-			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"mvn clean install"
-			};
-			result = CmdUtil.exec(cmds);
-			if(!result.contains("BUILD SUCCESS")){
-				throw new Exception("<<< error : maven package failed");
-			}
-			
-		} catch (Exception e) {
-			throw e;
+		}
+		if(!result.contains("Already up")){
+			throw new Exception("<<< error : git update failed");
+		}
+		
+	}
+	
+	public static void mvnInstall(String projectDir) throws Exception{
+		//2.maven 打包
+		Logger.log(">>> maven install");
+		String[] cmds = new String[]{
+				"cd "+projectDir,
+				projectDir.substring(0,2),
+				"mvn clean install"
+		};
+		String result = CmdUtil.exec(cmds);
+		if(!result.contains("BUILD SUCCESS")){
+			throw new Exception("<<< error : maven package failed");
 		}
 	}
 	
@@ -74,43 +62,24 @@ public class Script {
 	 * 配置本地打包工作
 	 * @throws Exception 
 	 */
-	public static void javaProjectUpdate(String projectDir,String configDir,String remoteTomcatDir,SSHConfig remoteSSHConfig) throws Exception{
+	public static void mvnPackage(String projectDir,String configDir) throws Exception{
 		try {
-			String result = "";
-			String[] cmds = null;
 			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
 			
-			//================================本地跟新包准备================================
-			//1.git更新
-			/*Logger.log(">>> 1. git update");
-			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"git pull"
-			};
-			result = CmdUtil.exec(cmds);
-			if(!result.contains("Already up")){
-				//第二次尝试，第一次可能有东西更新下来，不会有Already...
-				result = CmdUtil.exec(cmds);
-			}
-			if(!result.contains("Already up")){
-				throw new Exception("<<< error : git update failed");
-			}*/
-			
 			//2.maven 打包
-			Logger.log(">>> 2. maven package");
-			cmds = new String[]{
+			Logger.log(">>> maven package");
+			String[] cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
 					"mvn clean package"
 			};
-			result = CmdUtil.exec(cmds);
+			String result = CmdUtil.exec(cmds);
 			if(!result.contains("BUILD SUCCESS")){
 				throw new Exception("<<< error : maven package failed");
 			}
 			
 			//3.拷贝配置文件
-			Logger.log(">>> 3. copy config files");
+			Logger.log(">>> copy config files");
 			String[] resourceFileList = new File(configDir).list();
 			for(String rf:resourceFileList){
 				FileUtil.copy(configDir+"\\"+rf, projectDir+"\\target\\"+projectName+"\\WEB-INF\\classes");
@@ -118,25 +87,24 @@ public class Script {
 			}
 			
 			//4.压缩打包
-			Logger.log(">>> 4. compress files to war");
+			Logger.log(">>> compress files to war");
 			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war");
 
-			//================================准备更新上传================================
-			//5.备份远程文件
-			Logger.log(">>> 5. backup remote file");
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
-			String backupFileName = projectName+".war_"+sdf.format(new Date());
-			try {
-				SSHUtil.exec(remoteSSHConfig,"cp -n "+remoteTomcatDir+"/webapps/"+projectName+".war "+remoteTomcatDir+"/webapps_backup/"+backupFileName,10);
-			} catch (Exception e) {}
-			
-			//6.上传war包
-			Logger.log(">>> 6. upload war file");
-			SSHUtil.uploadFile(projectDir+"\\target\\"+projectName+".war", remoteTomcatDir+"/webapps", remoteSSHConfig);
-			
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	public static void sshFileBackup(String remoteFileDir,String backupFileDir, SSHConfig sshConfig) throws Exception{
+		//5.备份远程文件
+		Logger.log(">>> ssh backup remote file");
+		SSHUtil.exec(sshConfig,"cp -n "+remoteFileDir+" "+backupFileDir,10);
+	}
+
+	public static void sshFileUpload(String localFileDir,String remoteFileDir, SSHConfig sshConfig) throws Exception{
+		//6.上传war包
+		Logger.log(">>> upload war file");
+		SSHUtil.uploadFile(localFileDir, remoteFileDir, sshConfig);
 	}
 
 	/**
