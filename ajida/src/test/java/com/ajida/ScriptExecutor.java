@@ -189,7 +189,7 @@ public class ScriptExecutor {
 		//备份远程文件
 		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-admin.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
 
 		//########################xjp-admin
 		//mvn打包工程
@@ -199,7 +199,7 @@ public class ScriptExecutor {
 		//备份远程文件
 		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
 
 		//########################xjp-admin
 		//mvn打包工程
@@ -209,7 +209,7 @@ public class ScriptExecutor {
 		//备份远程文件
 		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-user.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
 
 		//#启动停着的节点
 		System.out.println("尝试启动tomcat"+targetPoint);
@@ -257,7 +257,7 @@ public class ScriptExecutor {
 
 			System.out.println("停止tomcat"+runningPoint);
 		}
-		
+		/*
 		//更新前端工程
 		//git更新
 		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
@@ -280,7 +280,7 @@ public class ScriptExecutor {
 				"del /f /s /q xjp-admin.zip"
 		};
 		CmdUtil.exec(cmds);
-		
+		*/
 	}
 
 }
