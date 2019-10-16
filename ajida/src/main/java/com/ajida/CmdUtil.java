@@ -51,7 +51,9 @@ public class CmdUtil {
 	        	Logger.log(errorLine);
 	        }
 	        if(hasError){
-	        	throw new Exception("!!! has error ...");
+	        	if(buf.indexOf("KB/s")<0){
+	        		throw new Exception(buf.toString());
+	        	}
 	        }
 		} catch (Exception e) {
 			throw e;
