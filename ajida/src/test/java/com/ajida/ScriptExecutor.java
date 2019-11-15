@@ -9,8 +9,8 @@ import org.axe.util.StringUtil;
 public class ScriptExecutor {
 	public static void main(String[] args) {
 		try {
-//			xjp_45();
-			xjp_114_hot();
+			xjp_45();
+//			xjp_114_hot();
 
 			/*
 			for(int i=1;i<1000;i++){
@@ -66,7 +66,7 @@ public class ScriptExecutor {
 		//备份远程文件
 		Ajida.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-admin.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-admin.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-admin.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/apache-tomcat-9.0.12/webapps", sshConfig);
 
 		//########################xjp-collector
 		//mvn打包工程
@@ -76,7 +76,7 @@ public class ScriptExecutor {
 		//备份远程文件
 		Ajida.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-collector.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-collector.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/apache-tomcat-9.0.12/webapps", sshConfig);
 
 		//########################xjp-user
 		//mvn打包工程
@@ -86,7 +86,7 @@ public class ScriptExecutor {
 		//备份远程文件
 		Ajida.sshFileBackup("/usr/local/apache-tomcat-9.0.12/webapps/xjp-user.war ", "/usr/local/apache-tomcat-9.0.12/webapps_backup/xjp-user.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/apache-tomcat-9.0.12/webapps/xjp-user.war", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/apache-tomcat-9.0.12/webapps", sshConfig);
 
 		//启动tomcat
 		System.out.println("尝试启动tomcat");
@@ -113,7 +113,7 @@ public class ScriptExecutor {
 		}else{
 			throw new Exception("tomcat 启动失败！");
 		}
-		
+		/*
 		//更新前端工程
 		//git更新
 		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
@@ -122,7 +122,7 @@ public class ScriptExecutor {
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_test");
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin.zip", "/usr/nginx/html/xjp-admin.zip", sshConfig);
+		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin.zip", "/usr/nginx/html", sshConfig);
 		//备份远程文件
 		SSHUtil.exec(sshConfig,"mv "+"/usr/nginx/html/xjp-admin /usr/nginx/html/xjp-admin_"+sdf.format(new Date()),10);
 		//解压缩远程压缩包
@@ -136,7 +136,7 @@ public class ScriptExecutor {
 				"del /f /s /q xjp-admin.zip"
 		};
 		CmdUtil.exec(cmds);
-		
+		*/
 	}
 	
 	public static void xjp_114_hot() throws Exception{
