@@ -9,8 +9,8 @@ import org.axe.util.StringUtil;
 public class ScriptExecutor {
 	public static void main(String[] args) {
 		try {
-			xjp_45();
-//			xjp_114_hot();
+//			xjp_45();
+			xjp_114_hot();
 
 			/*
 			for(int i=1;i<1000;i++){
@@ -181,7 +181,7 @@ public class ScriptExecutor {
 		Ajida.mvnInstallJar("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
-		//########################xjp-admin
+		/*//########################xjp-admin
 		//mvn打包工程
 		Ajida.mvnPackageWar(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
@@ -200,7 +200,7 @@ public class ScriptExecutor {
 		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
 		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
-
+*/
 		//########################xjp-admin
 		//mvn打包工程
 		Ajida.mvnPackageWar(
