@@ -48,7 +48,7 @@ public class Ajida {
 	 */
 	public static void mvnPackageWarApplication(String projectDir,String configDir) throws Exception{
 		try {
-			String projectName = projectDir.substring(projectDir.lastIndexOf("/")+1);
+			String projectName = projectDir.replace("\\", "/").substring(projectDir.lastIndexOf("/")+1);
 			
 			//2.maven 打包
 			Logger.log(">>> maven package");
@@ -85,7 +85,7 @@ public class Ajida {
 	 */
 	public static void mvnPackageJarApplication(String projectDir,String configDir) throws Exception{
 		try {
-			String projectName = projectDir.substring(projectDir.lastIndexOf("/")+1);
+			String projectName = projectDir.replace("\\", "/").substring(projectDir.lastIndexOf("/")+1);
 			
 			//2.maven 打包
 			Logger.log(">>> maven package");
@@ -154,7 +154,7 @@ public class Ajida {
 	 */
 	public static void htmlPackageZip(String projectDir,String configDir) throws Exception{
 		try {
-			String projectName = projectDir.substring(projectDir.lastIndexOf("/")+1);
+			String projectName = projectDir.replace("\\", "/").substring(projectDir.lastIndexOf("/")+1);
 			
 			//1.清理
 			Logger.log(">>> clean folder");
