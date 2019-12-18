@@ -46,9 +46,9 @@ public class Ajida {
 	 * 配置本地打包工作
 	 * @throws Exception 
 	 */
-	public static void mvnPackageWar(String projectDir,String configDir) throws Exception{
+	public static void mvnPackageWarApplication(String projectDir,String configDir) throws Exception{
 		try {
-			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
+			String projectName = projectDir.substring(projectDir.lastIndexOf("/")+1);
 			
 			//2.maven 打包
 			Logger.log(">>> maven package");
@@ -66,13 +66,70 @@ public class Ajida {
 			Logger.log(">>> copy config files");
 			String[] resourceFileList = new File(configDir).list();
 			for(String rf:resourceFileList){
-				FileUtil.copy(configDir+"\\"+rf, projectDir+"\\target\\"+projectName+"\\WEB-INF\\classes");
-				Logger.log("copy:"+configDir+"\\"+rf);
+				FileUtil.copy(configDir+"/"+rf, projectDir+"/target/"+projectName+"/WEB-INF/classes");
+				Logger.log("copy:"+configDir+"/"+rf);
 			}
 			
 			//4.压缩打包
 			Logger.log(">>> compress files to war");
-			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war");
+			ZipUtil.compressDir(new File(projectDir+"/target/"+projectName), projectDir+"/target/"+projectName+".war");
+
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 配置本地打包工作
+	 * @throws Exception 
+	 */
+	public static void mvnPackageJarApplication(String projectDir,String configDir) throws Exception{
+		try {
+			String projectName = projectDir.substring(projectDir.lastIndexOf("/")+1);
+			
+			//2.maven 打包
+			Logger.log(">>> maven package");
+			String[] cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"mvn clean package"
+			};
+			String result = CmdUtil.exec(cmds);
+			if(!result.contains("BUILD SUCCESS")){
+				throw new Exception("<<< error : maven package failed");
+			}
+			
+			//3.创建一个临时包目录，拷贝jar包到目录中
+			Logger.log(">>> create tmp package fold for project");
+			cmds = new String[]{
+					"cd "+projectDir+"/target",
+					projectDir.substring(0,2),
+					"md "+projectDir,
+					"cd "+projectDir,
+					"md lib",
+					"cd ..",
+					"copy "+projectName+".jar ./"+projectName+"/lib/"+projectName+".jar"
+			};
+			
+			//4.导出maven依赖
+			Logger.log(">>> export referenced libs");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"mvn dependency:copy-dependencies -DoutputDirectory=target/"+projectName+"/lib"
+			};
+			
+			//5.拷贝配置文件
+			Logger.log(">>> copy config files");
+			String[] resourceFileList = new File(configDir).list();
+			for(String rf:resourceFileList){
+				FileUtil.copy(configDir+"/"+rf, projectDir+"/target/"+projectName+"/");
+				Logger.log("copy:"+configDir+"/"+rf);
+			}
+			
+			//6.压缩打包
+			Logger.log(">>> compress files to war");
+			ZipUtil.compressDir(new File(projectDir+"/target/"+projectName), projectDir+"/target/"+projectName+".zip");
 
 		} catch (Exception e) {
 			throw e;
@@ -97,7 +154,7 @@ public class Ajida {
 	 */
 	public static void htmlPackageZip(String projectDir,String configDir) throws Exception{
 		try {
-			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
+			String projectName = projectDir.substring(projectDir.lastIndexOf("/")+1);
 			
 			//1.清理
 			Logger.log(">>> clean folder");
@@ -126,13 +183,13 @@ public class Ajida {
 			Logger.log(">>> copy config files");
 			String[] resourceFileList = new File(configDir).list();
 			for(String rf:resourceFileList){
-				FileUtil.copy(configDir+"\\"+rf, configDir+"\\..");
-				Logger.log("copy:"+configDir+"\\"+rf);
+				FileUtil.copy(configDir+"/"+rf, configDir+"/..");
+				Logger.log("copy:"+configDir+"/"+rf);
 			}
 			
 			//4.压缩打包
 			Logger.log(">>> compress files to zip");
-			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip");
+			ZipUtil.compressDir(new File(projectDir+"/"+projectName), projectDir+"/"+projectName+".zip");
 
 		} catch (Exception e) {
 			throw e;

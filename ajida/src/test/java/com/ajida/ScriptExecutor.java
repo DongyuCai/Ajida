@@ -60,7 +60,7 @@ public class ScriptExecutor {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 		//########################xjp-admin
 		//mvn打包工程
-		Ajida.mvnPackageWar(
+		Ajida.mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\config\\test");
 		//备份远程文件
@@ -70,7 +70,7 @@ public class ScriptExecutor {
 
 		//########################xjp-collector
 		//mvn打包工程
-		Ajida.mvnPackageWar(
+		Ajida.mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\config\\test");
 		//备份远程文件
@@ -80,7 +80,7 @@ public class ScriptExecutor {
 
 		//########################xjp-user
 		//mvn打包工程
-		Ajida.mvnPackageWar(
+		Ajida.mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\test");
 		//备份远程文件
@@ -183,7 +183,7 @@ public class ScriptExecutor {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 		/*//########################xjp-admin
 		//mvn打包工程
-		Ajida.mvnPackageWar(
+		Ajida.mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\config\\pro");
 		//备份远程文件
@@ -193,7 +193,7 @@ public class ScriptExecutor {
 
 		//########################xjp-admin
 		//mvn打包工程
-		Ajida.mvnPackageWar(
+		Ajida.mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\config\\pro");
 		//备份远程文件
@@ -203,7 +203,7 @@ public class ScriptExecutor {
 */
 		//########################xjp-admin
 		//mvn打包工程
-		Ajida.mvnPackageWar(
+		Ajida.mvnPackageWarApplication(
 			"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user",
 			"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\pro"+targetPoint);
 		//备份远程文件
