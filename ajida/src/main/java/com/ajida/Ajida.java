@@ -216,7 +216,8 @@ public class Ajida {
 					"echo java -classpath %CLASSPATH% "+mainClassPathAndStartParams+">>start.bat",
 					"echo pause>>start.bat",
 					//sh
-					"echo for i in ./lib/*.jar;>>start.sh",
+					"echo SHELL_FOLDER=$(cd \"$(dirname \"$0\")\";pwd)>>start.sh",
+					"echo for i in $SHELL_FOLDER/lib/*.jar;>>start.sh",
 					"echo do CLASSPATH=$i:\"$CLASSPATH\";>>start.sh",
 					"echo done>>start.sh",
 					"echo export CLASSPATH=:$CLASSPATH>>start.sh",
