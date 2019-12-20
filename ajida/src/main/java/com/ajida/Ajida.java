@@ -220,7 +220,7 @@ public class Ajida {
 					"echo for i in $SHELL_FOLDER/lib/*.jar;>>start.sh",
 					"echo do CLASSPATH=$i:\"$CLASSPATH\";>>start.sh",
 					"echo done>>start.sh",
-					"echo export CLASSPATH=:$CLASSPATH>>start.sh",
+					"echo CLASSPATH=:$CLASSPATH>>start.sh",
 					"echo java -classpath .:${CLASSPATH} "+mainClassPathAndStartParams+" ^&>>start.sh"
 			};
 			CmdUtil.exec(cmds);
