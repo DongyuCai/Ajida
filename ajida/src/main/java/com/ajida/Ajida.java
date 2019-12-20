@@ -5,6 +5,8 @@ import java.io.File;
 import org.axe.util.FileUtil;
 import org.axe.util.StringUtil;
 
+import ch.ethz.ssh2.Connection;
+
 public class Ajida {
 	public static void main(String[] args) {
 		
@@ -56,18 +58,19 @@ public class Ajida {
 		
 		//解压新包
 		Ajida.unzipRemotFile(remoteProjectDir+"/"+projectName+".zip", remoteProjectDir+"/"+projectName, sshConfig);
+		
 		//启动app
 		try {
-			SSHUtil.exec(sshConfig, 
+			Connection connect = SSHUtil.connect(sshConfig);
+			SSHUtil.exec(connect, 
 					new String[]{
 							"cd "+remoteProjectDir+"/"+projectName,
 							"chmod 777 -R *",
 							"dos2unix start.sh",
 	      					"./start.sh"}, 
-					10);
+					10,false);
 		} catch (Exception e) {}
 		System.out.println("启动 "+projectName);
-		
 	}
 	
 	public static void gitPull(String projectDir) throws Exception{
