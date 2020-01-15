@@ -1,73 +1,168 @@
 package com.ajida;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.axe.util.FileUtil;
 import org.axe.util.StringUtil;
+
+import ch.ethz.ssh2.Connection;
 
 public class Ajida {
 	public static void main(String[] args) {
 		
 	}
 	
-	public static String packageOnWindows(String projectName,String mainClassAndStartParams,String[] sdkProjectNameAry) throws Exception{
-		//git更新
-		String rootPath = new File("").getAbsolutePath();
-		rootPath = rootPath.substring(0,rootPath.lastIndexOf("\\"));
+	/**
+	 * @param even 环境，对应/config下的配置文件所在文件夹，比如test、pro
+	 * @param appConfig1 第1套配置
+	 * @param appConfig2 第2套配置
+	 * @param sdkProjectNameAry 依赖的sdk，需要安装的
+	 * @param sshConfig 
+	 * @param remoteProjectDir
+	 * @throws Exception
+	 */
+	public static void execute(String even,ApplicationConfig appConfig1,ApplicationConfig appConfig2,String[] sdkProjectNameAry,SSHConfig sshConfig,String remoteProjectDir) throws Exception{
+		appConfig1.setIndex(1);//设定好顺序
+		appConfig2.setIndex(2);
 		
-		Ajida.gitPull(rootPath);
-		
-		//mvn安装sdk工程
-		for(String sdkProjectName:sdkProjectNameAry){
-			Ajida.mvnInstallJar(rootPath+"\\"+sdkProjectName);
+		//获取链接
+		Connection sshConnection = SSHUtil.connect(sshConfig);
+		if(sshConnection == null){
+			throw new Exception("连接失败");
 		}
+		int timeout = 10;
+		try {
+			//git更新
+			String path = new File("").getAbsolutePath();
+			String rootPath = path.substring(0,path.lastIndexOf("\\"));
+			String projectName = path.substring(path.lastIndexOf("\\")+1);
+			
+			Ajida.gitPull(rootPath);
+			
+			//mvn安装sdk工程
+			for(String sdkProjectName:sdkProjectNameAry){
+				Ajida.mvnInstallJar(rootPath+"\\"+sdkProjectName);
+			}
 
-		//########################xjp-admin
-		//mvn打包工程
-		Ajida.mvnPackageJarApplication(
-				rootPath+"\\"+projectName,
-				rootPath+"\\"+projectName+"\\config\\test",
-				mainClassAndStartParams);
-		
-		//返回zip包路径
-		return rootPath+"\\"+projectName+"\\target\\"+projectName+".zip";
-		
-	}
-	
-	public static void uploadToLinux(String localZipPath,SSHConfig sshConfig,String remoteProjectDir,String projectName) throws Exception{
-		//停掉app
-		String pid = SSHUtil.exec(sshConfig,"ps -ef | grep "+remoteProjectDir+"/"+projectName+" | grep java | grep -v grep | awk '{print $2}'",10);
-		pid = pid !=null?pid.trim():"";
-		while(StringUtil.isNotEmpty(pid)){
-			SSHUtil.exec(sshConfig,"kill -9 "+pid,10);
-			pid = SSHUtil.exec(sshConfig,"ps -ef | grep "+remoteProjectDir+"/"+projectName+" | grep java | grep -v grep | awk '{print $2}'",10);
-			pid = pid !=null?pid.trim():"";
-		}
-		System.out.println("停止 "+projectName);
-		
-		//删除远程文件夹
-		try {
-			SSHUtil.exec(sshConfig,"rm -rf "+remoteProjectDir+"/"+projectName,10);
+			//根据服务器当前情况，选择使用appConfig1或者appConfig2
+			ApplicationConfig appConfig = appConfig1;//默认使用配置1
+			String pid = SSHUtil.getPid(remoteProjectDir+"/"+projectName+"_1 | grep java", timeout, sshConnection);
+			if(StringUtil.isNotEmpty(pid)){
+				//如果查到了配置1 的启动进程，则使用配置2
+				appConfig = appConfig2;
+			}
+			
+			
+			//mvn打包工程
+			String zipName = projectName+"_"+appConfig.getIndex();
+			Ajida.mvnPackageJarApplication(
+					rootPath+"\\"+projectName,
+					rootPath+"\\"+projectName+"\\config\\"+even,
+					appConfig,zipName);
+			
+			//上传到服务器
+			sshFileUpload(sshConnection,rootPath+"\\"+projectName+"\\target\\"+zipName+".zip", remoteProjectDir);
+			
+			//删除远程文件夹
+			try {
+				SSHUtil.exec(sshConnection,"rm -rf "+remoteProjectDir+"/"+zipName,timeout,false);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			//解压新包
+			Ajida.unzipRemotFile(sshConnection,timeout,remoteProjectDir+"/"+zipName+".zip", remoteProjectDir+"/"+zipName);
+			
+			//先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
+			try {
+				SSHUtil.exec(sshConnection,"cp "+remoteProjectDir+"/"+zipName+"/nginx/* /etc/nginx/vhost",timeout,false);
+				
+				String result = SSHUtil.exec(sshConnection,"/usr/sbin/nginx -c /etc/nginx/nginx.conf -t",timeout,true);
+				if(!result.toUpperCase().contains("SUCCESSFUL")){
+					throw new Exception("nginx 配置文件校验失败:\r\n"+result);
+				}
+			} catch (Exception e) {
+				if(e.getMessage().toUpperCase().contains("NO SUCH FILE OR DIRECTORY")){
+					throw e;
+				}
+				if(e.getMessage().toUpperCase().contains("FAILED")){
+					throw e;
+				}
+			}
+			
+			//启动app
+			try {
+				SSHUtil.exec(sshConnection, 
+						new String[]{
+								"cd "+remoteProjectDir+"/"+zipName,
+								"chmod 777 -R *",
+								"dos2unix start.sh",
+		      					"./start.sh"}, 
+						timeout,false);
+			} catch (Exception e) {}
+			System.out.println("正在启动 "+zipName);
+			
+			//等待启动成功
+			Set<String> tailSet = new HashSet<>();//排除tail到的重复行内容
+			while(true){
+				Thread.sleep(1000);
+				try {
+					String cat = SSHUtil.exec(sshConnection, "tail -n10 "+remoteProjectDir+"/"+zipName+"/log.txt", timeout,true);
+					String[] splitRows = cat.split("\r\n");
+					for(String row:splitRows){
+						if(!tailSet.contains(row)){
+							System.out.println(row);
+						}
+					}
+					tailSet.clear();
+					for(String row:splitRows){
+						tailSet.add(row);
+					}
+					if(cat.contains("Axe started success!")){
+						System.out.println(">>> "+zipName+"启动成功");
+						break;
+					}
+				} catch (Exception e) {
+					if(e.getMessage().toUpperCase().contains("NO SUCH FILE")){
+						System.out.print(".");
+					}
+				}
+			}
+
+			//重新启动nginx
+			//先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
+			try {
+				SSHUtil.exec(sshConnection,"/usr/sbin/nginx -c /etc/nginx/nginx.conf -s reload",timeout,false);
+			} catch (Exception e) {}
+			System.out.println(">>> Nginx已重启 ");
+			
+			//停掉老的app
+			ApplicationConfig stopConfig = appConfig1;//要停掉的配置，默认节点1
+			if(stopConfig.getIndex() == appConfig.getIndex()){
+				//如果要停掉的正好是刚启动的，则停掉另一个
+				stopConfig = appConfig2;
+			}
+			String stopZipName = projectName+"_"+stopConfig.getIndex();
+			pid = SSHUtil.getPid(remoteProjectDir+"/"+stopZipName+" | grep java", timeout, sshConnection);
+			while(StringUtil.isNotEmpty(pid)){
+				SSHUtil.exec(sshConnection,"kill -9 "+pid,timeout,false);
+				pid = SSHUtil.getPid(remoteProjectDir+"/"+stopZipName+" | grep java", timeout, sshConnection);
+			}
+			System.out.println(">>> 已停止 "+stopZipName);
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw e;
+		} finally {
+			try {
+				sshConnection.close();
+			} catch (Exception e2) {}
 		}
-		//上传新的包
-		Ajida.sshFileUpload(localZipPath, remoteProjectDir, sshConfig);
-		
-		//解压新包
-		Ajida.unzipRemotFile(remoteProjectDir+"/"+projectName+".zip", remoteProjectDir+"/"+projectName, sshConfig);
-		//启动app
-		try {
-			SSHUtil.exec(sshConfig, 
-					new String[]{
-							"cd "+remoteProjectDir+"/"+projectName,
-							"chmod 777 -R *",
-							"dos2unix start.sh",
-	      					"./start.sh"}, 
-					10);
-		} catch (Exception e) {}
-		System.out.println("启动 "+projectName);
-		
 	}
 	
 	public static void gitPull(String projectDir) throws Exception{
@@ -107,52 +202,15 @@ public class Ajida {
 	 * 配置本地打包工作
 	 * @throws Exception 
 	 */
-	public static void mvnPackageWarApplication(String projectDir,String configDir) throws Exception{
+	public static void mvnPackageJarApplication(String projectPath,String configPath,ApplicationConfig appConfig,String zipName) throws Exception{
 		try {
-			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
-			
-			//2.maven 打包
-			Logger.log(">>> maven package");
-			String[] cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"mvn clean package"
-			};
-			String result = CmdUtil.exec(cmds);
-			if(!result.contains("BUILD SUCCESS")){
-				throw new Exception("<<< error : maven package failed");
-			}
-			
-			//3.拷贝配置文件
-			Logger.log(">>> copy config files");
-			String[] resourceFileList = new File(configDir).list();
-			for(String rf:resourceFileList){
-				FileUtil.copy(configDir+"\\"+rf, projectDir+"\\target\\"+projectName+"\\WEB-INF\\classes");
-				Logger.log("copy:"+configDir+"\\"+rf);
-			}
-			
-			//4.压缩打包
-			Logger.log(">>> compress files to war");
-			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war");
-
-		} catch (Exception e) {
-			throw e;
-		}
-	}
-	
-	/**
-	 * 配置本地打包工作
-	 * @throws Exception 
-	 */
-	public static void mvnPackageJarApplication(String projectDir,String configDir,String mainClassPathAndStartParams) throws Exception{
-		try {
-			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
+			String projectName = projectPath.substring(projectPath.lastIndexOf("\\")+1);
 			
 			//1.maven 编译打包
 			Logger.log(">>> maven package");
 			String[] cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
+					"cd "+projectPath,
+					projectPath.substring(0,2),
 					"mvn clean package"
 			};
 			String result = CmdUtil.exec(cmds);
@@ -160,60 +218,86 @@ public class Ajida {
 				throw new Exception("<<< error : maven package failed");
 			}
 			
-			//2.删除配置文件，并压缩打包
-//			Logger.log(">>> compress classes to jar");
-//			cmds = new String[]{
-//					"cd "+projectDir+"\\target\\classes",
-//					projectDir.substring(0,2),
-//					"del /f /s /q *.*"
-//			};
-//			try {
-//				CmdUtil.exec(cmds);
-//			} catch (Exception e) {}
-//			ZipUtil.compressDir(new File(projectDir+"\\target\\classes"), projectDir+"\\target\\"+projectName+".jar");
-//			
-			//3.创建一个临时包目录，拷贝jar包到目录中
+			//2.创建一个临时包目录，拷贝jar包到目录中
 			Logger.log(">>> create tmp package fold for project");
 			cmds = new String[]{
-					"cd "+projectDir+"\\target",
-					projectDir.substring(0,2),
+					"cd "+projectPath+"\\target",
+					projectPath.substring(0,2),
 					"md "+projectName,
 					"cd "+projectName,
 					"md lib",
 					"cd ..",
-					"copy "+projectName+".jar "+projectDir+"\\target\\"+projectName+"\\lib\\"
+					"copy "+projectName+".jar "+projectPath+"\\target\\"+projectName+"\\lib\\"
 			};
 			CmdUtil.exec(cmds);
 			
-			//4.导出maven依赖
+			//3.导出maven依赖
 			Logger.log(">>> export referenced libs");
 			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"mvn dependency:copy-dependencies -DoutputDirectory="+projectDir+"\\target\\"+projectName+"\\lib"
+					"cd "+projectPath,
+					projectPath.substring(0,2),
+					"mvn dependency:copy-dependencies -DoutputDirectory="+projectPath+"\\target\\"+projectName+"\\lib"
 			};
 			CmdUtil.exec(cmds);
 			
-			//5.拷贝配置文件
+			//4.拷贝配置文件
 			Logger.log(">>> copy config files");
 			cmds = new String[]{
-					"cd "+projectDir,
-					projectDir.substring(0,2),
-					"copy "+configDir+"\\*.*"+" "+projectDir+"\\target\\"+projectName+"\\"
+					"cd "+projectPath,
+					projectPath.substring(0,2),
+					"copy "+configPath+"\\*.*"+" "+projectPath+"\\target\\"+projectName+"\\"
 			};
 			CmdUtil.exec(cmds);
+			
+			//5.需要特殊处理下nginx配置文件
+			File configDir = new File(configPath+"/nginx");
+			for(File nginxConfigFile:configDir.listFiles()){
+				BufferedReader reader = null;
+				BufferedWriter writer = null;
+				try {
+					reader = new BufferedReader(new FileReader(nginxConfigFile));
+					File copyFileDir = new File(projectPath+"\\target\\"+projectName+"\\nginx");
+					if(!copyFileDir.exists()){
+						copyFileDir.mkdir();
+					}
+					writer = new BufferedWriter(new FileWriter(new File(copyFileDir,nginxConfigFile.getName())));
+					String line = reader.readLine();
+					while(line != null){
+						for (String key : appConfig.getNginxParams().keySet()) {
+							line = line.replaceAll("\\$\\{ *" + key + " *\\}", appConfig.getNginxParams().get(key));
+						}
+						writer.write(line);
+						writer.newLine();
+						
+						line = reader.readLine();
+					}
+				} catch (Exception e) {
+					throw e;
+				} finally {
+					if(reader != null){
+						try {
+							reader.close();
+						} catch (Exception e2) {}
+					}
+					if(writer != null){
+						try {
+							writer.close();
+						} catch (Exception e2) {}
+					}
+				}
+			}
 			
 			//6.创建启动文件
 			Logger.log(">>> create start bat/sh files");
 			cmds = new String[]{
-					"cd "+projectDir+"\\target\\"+projectName,
-					projectDir.substring(0,2),
+					"cd "+projectPath+"\\target\\"+projectName,
+					projectPath.substring(0,2),
 					//bat
 					"echo @echo off>>start.bat",
 					"echo set CLASSPATH=.>>start.bat",
 					"echo setlocal enabledelayedexpansion>>start.bat",
 					"echo FOR %%i IN (\".\\lib\\*.jar\") DO SET CLASSPATH=!CLASSPATH!;%%i>>start.bat",
-					"echo java -classpath %CLASSPATH% "+mainClassPathAndStartParams+">>start.bat",
+					"echo java -classpath %CLASSPATH% "+appConfig.getApplicationMainClassAndStartParams()+">>start.bat",
 					"echo pause>>start.bat",
 					//sh
 					"echo SHELL_FOLDER=$(cd \"$(dirname \"$0\")\";pwd)>>start.sh",
@@ -221,30 +305,30 @@ public class Ajida {
 					"echo do CLASSPATH=$i:\"$CLASSPATH\";>>start.sh",
 					"echo done>>start.sh",
 					"echo CLASSPATH=:$CLASSPATH>>start.sh",
-					"echo java -classpath .:${CLASSPATH} "+mainClassPathAndStartParams+" ^&>>start.sh"
+					"echo java -classpath .:${CLASSPATH} "+appConfig.getApplicationMainClassAndStartParams()+" ^&>>start.sh"
 			};
 			CmdUtil.exec(cmds);
 			
 			
 			//6.压缩打包
 			Logger.log(">>> compress project to zip");
-			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".zip");
+			ZipUtil.compressDir(new File(projectPath+"\\target\\"+projectName), projectPath+"\\target\\"+zipName+".zip");
 
 		} catch (Exception e) {
 			throw e;
 		}
 	}
 	
-	public static void sshFileBackup(String remoteFileDir,String backupFileDir, SSHConfig sshConfig) throws Exception{
+	public static void sshFileBackup(Connection conn,int timeout,String remoteFileDir,String backupFileDir) throws Exception{
 		//5.备份远程文件
 		Logger.log(">>> ssh backup remote file");
-		SSHUtil.exec(sshConfig,"cp -n "+remoteFileDir+" "+backupFileDir,10);
+		SSHUtil.exec(conn,"cp -n "+remoteFileDir+" "+backupFileDir,10,false);
 	}
 
-	public static void sshFileUpload(String localFileDir,String remoteFileDir, SSHConfig sshConfig) throws Exception{
+	public static void sshFileUpload(Connection conn,String localFileDir,String remoteFileDir) throws Exception{
 		//6.上传war包
 		Logger.log(">>> upload war file");
-		SSHUtil.uploadFile(localFileDir, remoteFileDir, sshConfig);
+		SSHUtil.uploadFile(localFileDir, remoteFileDir, conn);
 	}
 
 	/**
@@ -295,11 +379,11 @@ public class Ajida {
 		}
 	}
 	
-	public static void unzipRemotFile(String remoteFileDir,String targetDir, SSHConfig sshConfig) throws Exception{
+	public static void unzipRemotFile(Connection conn,int timeout,String remoteFileDir,String targetDir) throws Exception{
 		Logger.log(">>> unzip zip");
-		SSHUtil.exec(sshConfig,new String[]{
+		SSHUtil.exec(conn,new String[]{
 				"unzip -d "+targetDir+" "+remoteFileDir
-				},10);
+				},timeout,false);
 	}
 	
 }

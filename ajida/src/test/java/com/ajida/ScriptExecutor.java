@@ -1,4 +1,4 @@
-package com.ajida;
+/*package com.ajida;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,11 +12,11 @@ public class ScriptExecutor {
 //			xjp_45();
 			xjp_114_hot();
 
-			/*
+			
 			for(int i=1;i<1000;i++){
 				int result = (i+2)%2;
 				
-			}*/
+			}
 			
 			//tomcat路径下静态资源要放到线上
 			//定时任务
@@ -113,7 +113,7 @@ public class ScriptExecutor {
 		}else{
 			throw new Exception("tomcat 启动失败！");
 		}
-		/*
+		
 		//更新前端工程
 		//git更新
 		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
@@ -136,7 +136,7 @@ public class ScriptExecutor {
 				"del /f /s /q xjp-admin.zip"
 		};
 		CmdUtil.exec(cmds);
-		*/
+		
 	}
 	
 	public static void xjp_114_hot() throws Exception{
@@ -181,7 +181,7 @@ public class ScriptExecutor {
 		Ajida.mvnInstallJar("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-ws");
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
-		/*//########################xjp-admin
+		//########################xjp-admin
 		//mvn打包工程
 		Ajida.mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
@@ -200,7 +200,7 @@ public class ScriptExecutor {
 		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
 		//上传新的包
 		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
-*/
+
 		//########################xjp-admin
 		//mvn打包工程
 		Ajida.mvnPackageWarApplication(
@@ -257,7 +257,7 @@ public class ScriptExecutor {
 
 			System.out.println("停止tomcat"+runningPoint);
 		}
-		/*
+		
 		//更新前端工程
 		//git更新
 		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
@@ -280,7 +280,8 @@ public class ScriptExecutor {
 				"del /f /s /q xjp-admin.zip"
 		};
 		CmdUtil.exec(cmds);
-		*/
+		
 	}
 
 }
+*/

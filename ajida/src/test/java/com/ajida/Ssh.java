@@ -1,4 +1,4 @@
-package com.ajida;
+/*package com.ajida;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class Ssh {
 				if(StringUtil.isNotEmpty(cmd)){
 					cmdContent.add(cmd);
 					try {
-						String exec = SSHUtil.exec(conn,cmdContent,10);
+						String exec = SSHUtil.exec(conn,cmdContent,10,true);
 						System.out.println(exec);
 						if(!cmd.toLowerCase().startsWith("cd ")){
 							cmdContent.remove(cmdContent.size()-1);
@@ -54,3 +54,4 @@ public class Ssh {
 		}
 	}
 }
+*/

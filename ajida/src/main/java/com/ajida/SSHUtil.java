@@ -1,7 +1,5 @@
 package com.ajida;
 
-import java.util.List;
-
 import ch.ethz.ssh2.Connection;
 
 public class SSHUtil {
@@ -29,69 +27,6 @@ public class SSHUtil {
 	/**
 	 * 远程执行命令
 	 */
-	public static String exec(SSHConfig conf,String command,int timeout)throws Exception {
-		return exec(conf, command, timeout, true);
-	}
-	public static String exec(SSHConfig conf,String command,int timeout,boolean needOutput)throws Exception {
-		Connection conn = null;
-		try {
-			conn = SSHClient.connect(conf.getIp(),conf.getPort(), conf.getName(), conf.getPassword());
-			return SSHClient.exec(conn, command, timeout,needOutput);
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			try {
-				if(conn != null){
-					conn.close();
-				}
-			} catch (Exception e2) {}
-		}
-	}
-	
-	/**
-	 * 远程执行命令
-	 */
-	public static String exec(SSHConfig conf,String[] commands,int timeout)throws Exception {
-		Connection conn = null;
-		try {
-			conn = SSHClient.connect(conf.getIp(),conf.getPort(), conf.getName(), conf.getPassword());
-			return exec(conn, commands, timeout);
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			try {
-				if(conn != null){
-					conn.close();
-				}
-			} catch (Exception e2) {}
-		}
-	}
-	
-	/**
-	 * 远程执行命令
-	 */
-	public static String exec(SSHConfig conf,List<String> commands,int timeout)throws Exception {
-		Connection conn = null;
-		try {
-			conn = SSHClient.connect(conf.getIp(),conf.getPort(), conf.getName(), conf.getPassword());
-			return exec(conn, commands, timeout);
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			try {
-				if(conn != null){
-					conn.close();
-				}
-			} catch (Exception e2) {}
-		}
-	}
-	
-	/**
-	 * 远程执行命令
-	 */
-	public static String exec(Connection conn,String command,int timeout)throws Exception {
-		return exec(conn, command, timeout, true);
-	}
 	public static String exec(Connection conn,String command,int timeout,boolean needOutput)throws Exception {
 		try {
 			return SSHClient.exec(conn, command ,timeout,needOutput);
@@ -99,12 +34,10 @@ public class SSHUtil {
 			throw e;
 		}
 	}
+	
 	/**
 	 * 远程执行命令
 	 */
-	public static String exec(Connection conn,String[] commands,int timeout)throws Exception {
-		return exec(conn, commands, timeout, true);
-	}
 	public static String exec(Connection conn,String[] commands,int timeout,boolean needOutput)throws Exception {
 		try {
 			StringBuilder buf = new StringBuilder();
@@ -122,44 +55,6 @@ public class SSHUtil {
 	}
 	
 	/**
-	 * 远程执行命令
-	 */
-	public static String exec(Connection conn,List<String> commands,int timeout)throws Exception {
-		return exec(conn, commands, timeout, true);
-	}
-	public static String exec(Connection conn,List<String> commands,int timeout,boolean needOutput)throws Exception {
-		try {
-			StringBuilder buf = new StringBuilder();
-			for(String cmd:commands){
-				if(buf.length()>0){
-					buf.append(";");
-				}
-				buf.append(cmd);
-			}
-			
-			return SSHClient.exec(conn, buf.toString() ,timeout,needOutput);
-		} catch (Exception e) {
-			throw e;
-		}
-	}
-	
-	/**
-	 * 本地文件远程上传
-	 */
-	public static void uploadFile(String localFilePath, String remotePath,SSHConfig conf)throws Exception{
-		Connection conn = SSHClient.connect(conf.getIp(),conf.getPort(), conf.getName(), conf.getPassword());
-		try {
-			uploadFile(localFilePath, remotePath, conn);
-		} catch (Exception e) {
-			throw e;
-		}finally{
-			try {
-				conn.close();
-			} catch (Exception e2) {}
-		}
-	}
-	
-	/**
 	 * 本地文件远程上传
 	 */
 	public static void uploadFile(String localFilePath, String remotePath,Connection conn)throws Exception{
@@ -173,7 +68,10 @@ public class SSHUtil {
 		}
 	}
 	
-	public static String grepPid(String keywords,int timeout,Connection conn) throws Exception{
+	/**
+	 * 查询pid
+	 */
+	public static String getPid(String keywords,int timeout,Connection conn) throws Exception{
 		String pid = SSHClient.exec(conn,"ps -ef | grep "+keywords+" | grep -v grep | head -n 1 | awk '{print $2}'",timeout,true);
 		pid = pid !=null?pid.trim():"";
 		return pid;
