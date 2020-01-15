@@ -1,10 +1,14 @@
-/*package com.ajida;
+package com.ajida;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
+import org.axe.util.FileUtil;
 import org.axe.util.StringUtil;
+
+import ch.ethz.ssh2.Connection;
 
 public class ScriptExecutor {
 	public static void main(String[] args) {
@@ -12,12 +16,6 @@ public class ScriptExecutor {
 //			xjp_45();
 			xjp_114_hot();
 
-			
-			for(int i=1;i<1000;i++){
-				int result = (i+2)%2;
-				
-			}
-			
 			//tomcat路径下静态资源要放到线上
 			//定时任务
 			//数据脚本，activity_prize的prize_type要刷
@@ -31,7 +29,7 @@ public class ScriptExecutor {
 	}
 	
 	
-	public static void xjp_45() throws Exception{
+	/*public static void xjp_45() throws Exception{
 		System.out.println("enter password:");
 		Scanner sc = new Scanner(System.in);
 		String password = sc.nextLine();
@@ -137,7 +135,7 @@ public class ScriptExecutor {
 		};
 		CmdUtil.exec(cmds);
 		
-	}
+	}*/
 	
 	public static void xjp_114_hot() throws Exception{
 		System.out.println("enter password:");
@@ -147,13 +145,15 @@ public class ScriptExecutor {
 		
 		SSHConfig sshConfig = new SSHConfig("114.218.158.239", "root", password);
 		
+		Connection connect = SSHUtil.connect(sshConfig);
+		
 		//#定义tomcat节点
 		String[] points = {"_1","_2"};
 		//#查看现在是tomcat服务哪个节点启动着
 		String targetPoint = "";//目标更新节点
 		String runningPoint = "";//先在正在运行的节点
 		for(String flag:points){
-			String pid = SSHUtil.exec(sshConfig,"ps -ef | grep /usr/local/tomcat"+flag+" | grep java | grep -v grep | awk '{print $2}'",10);
+			String pid = SSHUtil.exec(connect,"ps -ef | grep /usr/local/tomcat"+flag+" | grep java | grep -v grep | awk '{print $2}'",10,true);
 			pid = pid !=null?pid.trim():"";
 			
 			if(StringUtil.isEmpty(pid)){
@@ -183,43 +183,43 @@ public class ScriptExecutor {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd#HH_mm_ss");
 		//########################xjp-admin
 		//mvn打包工程
-		Ajida.mvnPackageWarApplication(
+		mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\config\\pro");
 		//备份远程文件
-		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-admin.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup(connect,10,"/usr/local/tomcat"+targetPoint+"/webapps/xjp-admin.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-admin.war_"+sdf.format(new Date()));
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
+		Ajida.sshFileUpload(connect,"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-admin\\target\\xjp-admin.war", "/usr/local/tomcat"+targetPoint+"/webapps/");
 
 		//########################xjp-admin
 		//mvn打包工程
-		Ajida.mvnPackageWarApplication(
+		mvnPackageWarApplication(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector",
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\config\\pro");
 		//备份远程文件
-		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-collector.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup(connect,10,"/usr/local/tomcat"+targetPoint+"/webapps/xjp-collector.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-collector.war_"+sdf.format(new Date()));
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
+		Ajida.sshFileUpload(connect,"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-collector\\target\\xjp-collector.war", "/usr/local/tomcat"+targetPoint+"/webapps/");
 
 		//########################xjp-admin
 		//mvn打包工程
-		Ajida.mvnPackageWarApplication(
+		mvnPackageWarApplication(
 			"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user",
 			"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\config\\pro"+targetPoint);
 		//备份远程文件
-		Ajida.sshFileBackup("/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-user.war_"+sdf.format(new Date()), sshConfig);
+		Ajida.sshFileBackup(connect,10,"/usr/local/tomcat"+targetPoint+"/webapps/xjp-user.war ", "/usr/local/tomcat"+targetPoint+"/webapps_backup/xjp-user.war_"+sdf.format(new Date()));
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/tomcat"+targetPoint+"/webapps/", sshConfig);
+		Ajida.sshFileUpload(connect,"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/tomcat"+targetPoint+"/webapps/");
 
 		//#启动停着的节点
 		System.out.println("尝试启动tomcat"+targetPoint);
-		SSHUtil.exec(sshConfig,"/usr/local/tomcat"+targetPoint+"/bin/startup.sh",10);
+		SSHUtil.exec(connect,"/usr/local/tomcat"+targetPoint+"/bin/startup.sh",10,false);
 		//监控tomcat启动结果，这里等待10分钟，如果10分钟都没启动成功，则启动失败，不做后续的nignx切换和tomcat停机
 		int waitSec = 10*60;
 		boolean tomcatStartSuccess = false;
 		String tailResult = "";
 		for(int i=0;i<waitSec;i++){
-			String execResult = SSHUtil.exec(sshConfig,"tail -n 1 /usr/local/tomcat"+targetPoint+"/logs/catalina.out",10);
+			String execResult = SSHUtil.exec(connect,"tail -n 1 /usr/local/tomcat"+targetPoint+"/logs/catalina.out",10,true);
 			execResult = execResult !=null?execResult.trim():"";
 			if(!tailResult.equals(execResult)){
 				System.out.println(execResult);
@@ -238,26 +238,26 @@ public class ScriptExecutor {
 		}
 		
 		//#切换nginx配置到新启动的节点
-		SSHUtil.exec(sshConfig,new String[]{
+		SSHUtil.exec(connect,new String[]{
 				//需要复制节点ngix配置文件
 				"cp -f /etc/nginx/loadbalance/nginx"+targetPoint+".conf /etc/nginx/nginx.conf",
 				"/usr/sbin/nginx -s reload"
-				},10);
+				},10,false);
 		System.out.println("切换nginx反向代理端口");
 		
 		//#停掉老的节点
 		if(StringUtil.isNotEmpty(runningPoint)){
-			String pid = SSHUtil.exec(sshConfig,"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'",10);
+			String pid = SSHUtil.exec(connect,"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'",10,true);
 			pid = pid !=null?pid.trim():"";
 			while(StringUtil.isNotEmpty(pid)){
-				SSHUtil.exec(sshConfig,"kill -9 "+pid,10);
-				pid = SSHUtil.exec(sshConfig,"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'",10);
+				SSHUtil.exec(connect,"kill -9 "+pid,10,false);
+				pid = SSHUtil.exec(connect,"ps -ef | grep /usr/local/tomcat"+runningPoint+" | grep java | grep -v grep | awk '{print $2}'",10,true);
 				pid = pid !=null?pid.trim():"";
 			}
 
 			System.out.println("停止tomcat"+runningPoint);
 		}
-		
+		/*
 		//更新前端工程
 		//git更新
 		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
@@ -266,11 +266,11 @@ public class ScriptExecutor {
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_pro");
 		//上传新的包
-		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin.zip", "/var/html/xjp-admin.zip", sshConfig);
+		Ajida.sshFileUpload(connect,"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin.zip", "/var/html/xjp-admin.zip");
 		//备份远程文件
-		SSHUtil.exec(sshConfig,"mv "+"/var/html/xjp-admin /var/html/xjp-admin_"+sdf.format(new Date()),10);
+		SSHUtil.exec(connect,"mv "+"/var/html/xjp-admin /var/html/xjp-admin_"+sdf.format(new Date()),10,false);
 		//解压缩远程压缩包
-		Ajida.unzipRemotFile("/var/html/xjp-admin.zip", "/var/html/xjp-admin", sshConfig);
+		Ajida.unzipRemotFile(connect,10,"/var/html/xjp-admin.zip", "/var/html/xjp-admin");
 		//清理
 		Logger.log(">>> clean folder again");
 		String[] cmds = new String[]{
@@ -280,8 +280,44 @@ public class ScriptExecutor {
 				"del /f /s /q xjp-admin.zip"
 		};
 		CmdUtil.exec(cmds);
-		
+		*/
 	}
 
+	
+	/**
+	 * 配置本地打包工作
+	 * @throws Exception 
+	 */
+	public static void mvnPackageWarApplication(String projectDir,String configDir) throws Exception{
+		try {
+			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
+			
+			//2.maven 打包
+			Logger.log(">>> maven package");
+			String[] cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"mvn clean package"
+			};
+			String result = CmdUtil.exec(cmds);
+			if(!result.contains("BUILD SUCCESS")){
+				throw new Exception("<<< error : maven package failed");
+			}
+			
+			//3.拷贝配置文件
+			Logger.log(">>> copy config files");
+			String[] resourceFileList = new File(configDir).list();
+			for(String rf:resourceFileList){
+				FileUtil.copy(configDir+"\\"+rf, projectDir+"\\target\\"+projectName+"\\WEB-INF\\classes");
+				Logger.log("copy:"+configDir+"\\"+rf);
+			}
+			
+			//4.压缩打包
+			Logger.log(">>> compress files to war");
+			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war");
+
+		} catch (Exception e) {
+			throw e;
+		}
+	}
 }
-*/
