@@ -3,7 +3,7 @@ package com.ajida;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ApplicationConfig {
+public class AxeAppConfig {
 
 	/**
 	 * nginx配置参数
@@ -17,7 +17,7 @@ public class ApplicationConfig {
 	
 	private int index = 0;//配置的所在顺序，对应启动节点
 
-	public ApplicationConfig(String applicationMainClassAndStartParams) {
+	public AxeAppConfig(String applicationMainClassAndStartParams) {
 		this.applicationMainClassAndStartParams = applicationMainClassAndStartParams;
 	}
 

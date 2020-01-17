@@ -257,12 +257,12 @@ public class ScriptExecutor {
 
 			System.out.println("停止tomcat"+runningPoint);
 		}
-		/*
+		
 		//更新前端工程
 		//git更新
 		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html");
 		
-		Ajida.htmlPackageZip(
+		htmlPackageZip(
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin", 
 				"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin\\xjp-admin\\js\\conf_pro");
 		//上传新的包
@@ -280,7 +280,7 @@ public class ScriptExecutor {
 				"del /f /s /q xjp-admin.zip"
 		};
 		CmdUtil.exec(cmds);
-		*/
+		
 	}
 
 	
@@ -315,6 +315,54 @@ public class ScriptExecutor {
 			//4.压缩打包
 			Logger.log(">>> compress files to war");
 			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war");
+
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 配置本地打包工作
+	 * @throws Exception 
+	 */
+	public static void htmlPackageZip(String projectDir,String configDir) throws Exception{
+		try {
+			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
+			
+			//1.清理
+			Logger.log(">>> clean folder");
+			String[] cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"rd /s /q "+projectName,
+					"del /f /s /q "+projectName+".zip"
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
+			
+			//2.fis 打包
+			Logger.log(">>> fis relase");
+			cmds = new String[]{
+					"cd "+projectDir,
+					projectDir.substring(0,2),
+					"fis3 release build -d .\\"+projectName
+			};
+			try {
+				CmdUtil.exec(cmds);
+			} catch (Exception e) {}
+			
+			//3.拷贝配置文件
+			Logger.log(">>> copy config files");
+			String[] resourceFileList = new File(configDir).list();
+			for(String rf:resourceFileList){
+				FileUtil.copy(configDir+"\\"+rf, configDir+"\\..");
+				Logger.log("copy:"+configDir+"\\"+rf);
+			}
+			
+			//4.压缩打包
+			Logger.log(">>> compress files to zip");
+			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip");
 
 		} catch (Exception e) {
 			throw e;
