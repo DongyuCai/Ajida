@@ -27,6 +27,9 @@ public class Ajida {
 	 * @throws Exception
 	 */
 	public static void axeProjectUpdate(String even,AxeAppConfig appConfig1,AxeAppConfig appConfig2,String[] sdkProjectNameAry,SSHConfig sshConfig,String remoteProjectDir) throws Exception{
+		axeProjectUpdate(true, even, appConfig1, appConfig2, sdkProjectNameAry, sshConfig, remoteProjectDir);
+	}
+	public static void axeProjectUpdate(boolean needGitPull,String even,AxeAppConfig appConfig1,AxeAppConfig appConfig2,String[] sdkProjectNameAry,SSHConfig sshConfig,String remoteProjectDir) throws Exception{
 		appConfig1.setIndex(1);//设定好顺序
 		appConfig2.setIndex(2);
 		
@@ -50,16 +53,18 @@ public class Ajida {
 			}
 			
 			//git更新
-			Ajida.gitPull(rootPath);
+			if(needGitPull){
+				gitPull(rootPath);
+			}
 			
 			//mvn安装sdk工程
 			for(String sdkProjectName:sdkProjectNameAry){
-				Ajida.mvnInstallJar(rootPath+"\\"+sdkProjectName);
+				mvnInstallJar(rootPath+"\\"+sdkProjectName);
 			}
 			
 			//mvn打包工程
 			String zipName = projectName+"_"+appConfig.getIndex();
-			Ajida.mvnPackageJarApplication(
+			mvnPackageJarApplication(
 					rootPath+"\\"+projectName,
 					rootPath+"\\"+projectName+"\\config\\"+even,
 					appConfig,zipName);
@@ -75,7 +80,7 @@ public class Ajida {
 			}
 
 			//解压新包
-			Ajida.unzipRemotFile(sshConnection,timeout,remoteProjectDir+"/"+zipName+".zip", remoteProjectDir+"/"+zipName);
+			unzipRemotFile(sshConnection,timeout,remoteProjectDir+"/"+zipName+".zip", remoteProjectDir+"/"+zipName);
 			
 			//先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
 			try {
@@ -164,6 +169,9 @@ public class Ajida {
 	}
 	
 	public static void htmlProjectUpdate(String even,SSHConfig sshConfig,String projectLocalDir,String remoteProjectDir) throws Exception{
+		htmlProjectUpdate(true, even, sshConfig, projectLocalDir, remoteProjectDir);
+	}	
+	public static void htmlProjectUpdate(boolean needGitPull,String even,SSHConfig sshConfig,String projectLocalDir,String remoteProjectDir) throws Exception{
 		//获取链接
 		Connection sshConnection = SSHUtil.connect(sshConfig);
 		if(sshConnection == null){
@@ -175,7 +183,9 @@ public class Ajida {
 			String projectName = projectLocalDir.substring(projectLocalDir.lastIndexOf("\\")+1);
 			
 			//git更新
-			gitPull(projectLocalDir);
+			if(needGitPull){
+				gitPull(projectLocalDir);
+			}
 			
 			//清理
 			Logger.log(">>> clean folder");
@@ -214,7 +224,7 @@ public class Ajida {
 			ZipUtil.compressDir(new File(projectLocalDir+"\\"+projectName), projectLocalDir+"\\"+projectName+".zip");
 
 			//上传新的包
-			Ajida.sshFileUpload(sshConnection,projectLocalDir+"\\"+projectName+".zip", remoteProjectDir);
+			sshFileUpload(sshConnection,projectLocalDir+"\\"+projectName+".zip", remoteProjectDir);
 			
 			//删除远程文件夹
 			try {
@@ -224,7 +234,7 @@ public class Ajida {
 			}
 
 			//解压缩远程压缩包
-			Ajida.unzipRemotFile(sshConnection,timeout,remoteProjectDir+"/"+projectName+".zip", remoteProjectDir+"/"+projectName);
+			unzipRemotFile(sshConnection,timeout,remoteProjectDir+"/"+projectName+".zip", remoteProjectDir+"/"+projectName);
 			//清理
 			Logger.log(">>> clean folder again");
 			cmds = new String[]{
