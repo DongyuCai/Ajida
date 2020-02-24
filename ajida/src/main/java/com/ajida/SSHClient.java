@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
+import org.axe.util.LogUtil;
+
 import ch.ethz.ssh2.ChannelCondition;
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SCPClient;
@@ -68,7 +70,7 @@ public class SSHClient {
 		try {
 			sc.get(fileName, localPath);
 		} catch (IOException e) {
-			e.printStackTrace();
+			LogUtil.error(e);
 		}
 	}
 
@@ -95,8 +97,8 @@ public class SSHClient {
 				}
 				sft.close();
 			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			LogUtil.error(e);
 		}
 	}
 

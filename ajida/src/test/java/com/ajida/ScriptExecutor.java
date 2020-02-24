@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Scanner;
 
 import org.axe.util.FileUtil;
+import org.axe.util.LogUtil;
 import org.axe.util.StringUtil;
 
 import ch.ethz.ssh2.Connection;
@@ -24,7 +25,7 @@ public class ScriptExecutor {
 			//3.后台两个订单查询页面
 			//4.新的邀请好友宣传页
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.error(e);
 		}
 	}
 	

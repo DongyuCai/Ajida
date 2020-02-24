@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.axe.util.LogUtil;
+
 public class CmdUtil {
 	public static void main(String[] args) {
 		try {
@@ -13,7 +15,7 @@ public class CmdUtil {
 					"mvn clean package"
 			});
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.error(e);
 		}
 	}
 	

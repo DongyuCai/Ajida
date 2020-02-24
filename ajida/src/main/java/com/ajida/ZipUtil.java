@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.axe.util.LogUtil;
 import org.axe.util.StringUtil;
 
 /**
@@ -80,7 +81,7 @@ public class ZipUtil {
 		try {
 			compressDir(new File("D:\\tmp\\test"),"D:\\tmp\\xjp-user.war");
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.error(e);
 		}
 	}
 }

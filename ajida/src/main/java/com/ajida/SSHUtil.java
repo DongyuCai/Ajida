@@ -1,5 +1,7 @@
 package com.ajida;
 
+import org.axe.util.LogUtil;
+
 import ch.ethz.ssh2.Connection;
 
 public class SSHUtil {
@@ -12,7 +14,7 @@ public class SSHUtil {
 					"tail -f /usr/local/apache-tomcat-9.0.12/logs/catalina.out"
 			}, 60, new SSHConfig("192.168.199.45", "root", "ybsl1234"));*/
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.error(e);
 		}
 	}
 	

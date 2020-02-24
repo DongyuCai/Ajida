@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.axe.util.LogUtil;
 import org.axe.util.StringUtil;
 
 import ch.ethz.ssh2.Connection;
@@ -76,7 +77,7 @@ public class Ajida {
 			try {
 				SSHUtil.exec(sshConnection,"rm -rf "+remoteProjectDir+"/"+zipName,timeout,false);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LogUtil.error(e);
 			}
 
 			//解压新包
@@ -219,6 +220,9 @@ public class Ajida {
 			};
 			CmdUtil.exec(cmds);
 			
+			//替换几个需要替换版本的文件
+			//TODO
+			
 			//压缩打包
 			Logger.log(">>> compress files to zip");
 			ZipUtil.compressDir(new File(projectLocalDir+"\\"+projectName), projectLocalDir+"\\"+projectName+".zip");
@@ -230,7 +234,7 @@ public class Ajida {
 			try {
 				SSHUtil.exec(sshConnection,"rm -rf "+remoteProjectDir+"/"+projectName,timeout,false);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LogUtil.error(e);
 			}
 
 			//解压缩远程压缩包

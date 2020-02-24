@@ -44,7 +44,7 @@ public class Ssh {
 			
 			sc.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.error(e);
 		} finally {
 			try {
 				if(conn != null){
