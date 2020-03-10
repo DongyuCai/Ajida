@@ -37,7 +37,7 @@ public class AxeAppConfig {
 		return index;
 	}
 
-	protected void setIndex(int index) {
+	public void setIndex(int index) {
 		this.index = index;
 	}
 	
