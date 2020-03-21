@@ -28,16 +28,16 @@ public class Ajida {
 	 * @param sdkProjectNameAry
 	 *            依赖的sdk，需要安装的
 	 * @param sshConfig
-	 * @param remoteProjectDir
+	 * @param distDir 发布目录
 	 * @throws Exception
 	 */
 	public static void axeProjectUpdate(String even, AxeAppConfig appConfig1, AxeAppConfig appConfig2,
-			String[] sdkProjectNameAry, SSHConfig sshConfig, String remoteProjectDir) throws Exception {
-		axeProjectUpdate(true, even, appConfig1, appConfig2, sdkProjectNameAry, sshConfig, remoteProjectDir);
+			String[] sdkProjectNameAry, SSHConfig sshConfig, String distDir) throws Exception {
+		axeProjectUpdate(true, even, appConfig1, appConfig2, sdkProjectNameAry, sshConfig, distDir);
 	}
 
 	public static void axeProjectUpdate(boolean needGitPull, String even, AxeAppConfig appConfig1,
-			AxeAppConfig appConfig2, String[] sdkProjectNameAry, SSHConfig sshConfig, String remoteProjectDir)
+			AxeAppConfig appConfig2, String[] sdkProjectNameAry, SSHConfig sshConfig, String distDir)
 			throws Exception {
 		appConfig1.setIndex(1);// 设定好顺序
 		appConfig2.setIndex(2);
@@ -49,13 +49,15 @@ public class Ajida {
 		}
 		int timeout = 10;
 		try {
+			SSHUtil.exec(sshConnection, "/", timeout, true);
+			
 			String path = new File("").getAbsolutePath();
 			String rootPath = path.substring(0, path.lastIndexOf("\\"));
 			String projectName = path.substring(path.lastIndexOf("\\") + 1);
 
 			// 根据服务器当前情况，选择使用appConfig1或者appConfig2
 			AxeAppConfig appConfig = appConfig1;// 默认使用配置1
-			String pid = SSHUtil.getPid(remoteProjectDir + "/" + projectName + "_1 | grep java", timeout,
+			String pid = SSHUtil.getPid(distDir + "/" + projectName + "_1 | grep java", timeout,
 					sshConnection);
 			if (StringUtil.isNotEmpty(pid)) {
 				// 如果查到了配置1 的启动进程，则使用配置2
@@ -79,22 +81,22 @@ public class Ajida {
 
 			// 上传到服务器
 			sshFileUpload(sshConnection, rootPath + "\\" + projectName + "\\target\\" + zipName + ".zip",
-					remoteProjectDir);
+					distDir);
 
 			// 删除远程文件夹
 			try {
-				SSHUtil.exec(sshConnection, "rm -rf " + remoteProjectDir + "/" + zipName, timeout, false);
+				SSHUtil.exec(sshConnection, "rm -rf " + distDir + "/" + zipName, timeout, false);
 			} catch (Exception e) {
 				LogUtil.error(e);
 			}
 
 			// 解压新包
-			unzipRemotFile(sshConnection, timeout, remoteProjectDir + "/" + zipName + ".zip",
-					remoteProjectDir + "/" + zipName);
+			unzipRemotFile(sshConnection, timeout, distDir + "/" + zipName + ".zip",
+					distDir + "/" + zipName);
 
 			// 先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
 			try {
-				SSHUtil.exec(sshConnection, "cp " + remoteProjectDir + "/" + zipName + "/nginx/* /etc/nginx/vhost",
+				SSHUtil.exec(sshConnection, "cp " + distDir + "/" + zipName + "/nginx/* /etc/nginx/vhost",
 						timeout, false);
 
 				String result = SSHUtil.exec(sshConnection, "/usr/sbin/nginx -c /etc/nginx/nginx.conf -t", timeout,
@@ -113,7 +115,7 @@ public class Ajida {
 
 			// 启动app
 			try {
-				SSHUtil.exec(sshConnection, new String[] { "cd " + remoteProjectDir + "/" + zipName, "chmod 777 -R *",
+				SSHUtil.exec(sshConnection, new String[] { "cd " + distDir + "/" + zipName, "chmod 777 -R *",
 						"dos2unix start.sh", "./start.sh" }, timeout, false);
 			} catch (Exception e) {
 			}
@@ -125,7 +127,7 @@ public class Ajida {
 				Thread.sleep(1000);
 				try {
 					String cat = SSHUtil.exec(sshConnection,
-							"tail -n10 " + remoteProjectDir + "/" + zipName + "/log.txt", timeout, true);
+							"tail -n10 " + distDir + "/" + zipName + "/log.txt", timeout, true);
 					String[] splitRows = cat.split("\r\n");
 					for (String row : splitRows) {
 						if (!tailSet.contains(row)) {
@@ -162,10 +164,10 @@ public class Ajida {
 				stopConfig = appConfig2;
 			}
 			String stopZipName = projectName + "_" + stopConfig.getIndex();
-			pid = SSHUtil.getPid(remoteProjectDir + "/" + stopZipName + " | grep java", timeout, sshConnection);
+			pid = SSHUtil.getPid(distDir + "/" + stopZipName + " | grep java", timeout, sshConnection);
 			while (StringUtil.isNotEmpty(pid)) {
 				SSHUtil.exec(sshConnection, "kill -9 " + pid, timeout, false);
-				pid = SSHUtil.getPid(remoteProjectDir + "/" + stopZipName + " | grep java", timeout, sshConnection);
+				pid = SSHUtil.getPid(distDir + "/" + stopZipName + " | grep java", timeout, sshConnection);
 			}
 			System.out.println(">>> 已停止 " + stopZipName);
 
