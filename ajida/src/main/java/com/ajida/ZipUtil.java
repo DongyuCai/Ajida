@@ -65,7 +65,7 @@ public class ZipUtil {
 			// 压缩目录中的所有文件
 			out.putNextEntry(new ZipEntry(base));
 			FileInputStream in = new FileInputStream(sourceFile);
-			Logger.log("compress:"+base);
+			LogUtil.log("compress:"+base);
 			byte[] b = new byte[1024 * 1024];
 			int len = 0;
 			while ((len = in.read(b)) != -1) {

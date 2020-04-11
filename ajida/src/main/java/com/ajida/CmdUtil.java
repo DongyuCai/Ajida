@@ -38,7 +38,7 @@ public class CmdUtil {
 	        String line = null;
 	        buf.setLength(0);
 	        while ((line = br.readLine()) != null) {
-	        	Logger.log(line);
+	        	LogUtil.log(line);
 	        	buf.append(line).append("\r\n");
 	        }
 
@@ -50,7 +50,7 @@ public class CmdUtil {
 	        boolean hasError = false;
 	        while ((errorLine = errorBr.readLine()) != null) {
 	        	hasError = true;
-	        	Logger.log(errorLine);
+	        	LogUtil.log(errorLine);
 	        }
 	        if(hasError){
 	        	if(buf.indexOf("KB/s")<0){

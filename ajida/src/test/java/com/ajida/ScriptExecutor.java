@@ -31,7 +31,7 @@ public class ScriptExecutor {
 	
 	
 	/*public static void xjp_45() throws Exception{
-		System.out.println("enter password:");
+		LogUtil.log("enter password:");
 		Scanner sc = new Scanner(System.in);
 		String password = sc.nextLine();
 		sc.close();
@@ -46,7 +46,7 @@ public class ScriptExecutor {
 			pid = SSHUtil.exec(sshConfig,"ps -ef | grep /usr/local/apache-tomcat-9.0.12 | grep java | grep -v grep | awk '{print $2}'",10);
 			pid = pid !=null?pid.trim():"";
 		}
-		System.out.println("停止tomcat");
+		LogUtil.log("停止tomcat");
 		
 		//git更新
 		Ajida.gitPull("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java");
@@ -88,7 +88,7 @@ public class ScriptExecutor {
 		Ajida.sshFileUpload("D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/apache-tomcat-9.0.12/webapps", sshConfig);
 
 		//启动tomcat
-		System.out.println("尝试启动tomcat");
+		LogUtil.log("尝试启动tomcat");
 		SSHUtil.exec(sshConfig,"/usr/local/apache-tomcat-9.0.12/bin/startup.sh",10);
 		//监控tomcat启动结果，这里等待10分钟，如果10分钟都没启动成功，则启动失败
 		int waitSec = 10*60;
@@ -98,7 +98,7 @@ public class ScriptExecutor {
 			String execResult = SSHUtil.exec(sshConfig,"tail -n 1 /usr/local/apache-tomcat-9.0.12/logs/catalina.out",10);
 			execResult = execResult !=null?execResult.trim():"";
 			if(!tailResult.equals(execResult)){
-				System.out.println(execResult);
+				LogUtil.log(execResult);
 				tailResult = execResult;
 			}
 			if(tailResult != null && tailResult.contains("Server startup in")){
@@ -108,7 +108,7 @@ public class ScriptExecutor {
 			Thread.sleep(1000);
 		}
 		if(tomcatStartSuccess){
-			System.out.println("tomcat 启动成功");
+			LogUtil.log("tomcat 启动成功");
 		}else{
 			throw new Exception("tomcat 启动失败！");
 		}
@@ -127,7 +127,7 @@ public class ScriptExecutor {
 		//解压缩远程压缩包
 		Ajida.unzipRemotFile("/usr/nginx/html/xjp-admin.zip", "/usr/nginx/html/xjp-admin", sshConfig);
 		//清理
-		Logger.log(">>> clean folder again");
+		LogUtil.log(">>> clean folder again");
 		String[] cmds = new String[]{
 				"cd D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin",
 				"D:",
@@ -139,7 +139,7 @@ public class ScriptExecutor {
 	}*/
 	
 	public static void xjp_114_hot() throws Exception{
-		System.out.println("enter password:");
+		LogUtil.log("enter password:");
 		Scanner sc = new Scanner(System.in);
 		String password = sc.nextLine();
 		sc.close();
@@ -171,7 +171,7 @@ public class ScriptExecutor {
 		
 		
 		//#打包代码，上传到停着的节点
-		System.out.println("准备更新包到tomcat"+targetPoint);
+		LogUtil.log("准备更新包到tomcat"+targetPoint);
 		
 
 		//git更新
@@ -213,7 +213,7 @@ public class ScriptExecutor {
 		Ajida.sshFileUpload(connect,"D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-java\\xjp-user\\target\\xjp-user.war", "/usr/local/tomcat"+targetPoint+"/webapps/");
 
 		//#启动停着的节点
-		System.out.println("尝试启动tomcat"+targetPoint);
+		LogUtil.log("尝试启动tomcat"+targetPoint);
 		SSHUtil.exec(connect,"/usr/local/tomcat"+targetPoint+"/bin/startup.sh",10,false);
 		//监控tomcat启动结果，这里等待10分钟，如果10分钟都没启动成功，则启动失败，不做后续的nignx切换和tomcat停机
 		int waitSec = 10*60;
@@ -223,7 +223,7 @@ public class ScriptExecutor {
 			String execResult = SSHUtil.exec(connect,"tail -n 1 /usr/local/tomcat"+targetPoint+"/logs/catalina.out",10,true);
 			execResult = execResult !=null?execResult.trim():"";
 			if(!tailResult.equals(execResult)){
-				System.out.println(execResult);
+				LogUtil.log(execResult);
 				tailResult = execResult;
 			}
 			if(tailResult != null && tailResult.contains("Server startup in")){
@@ -233,7 +233,7 @@ public class ScriptExecutor {
 			Thread.sleep(1000);
 		}
 		if(tomcatStartSuccess){
-			System.out.println("tomcat"+targetPoint+" 启动成功");
+			LogUtil.log("tomcat"+targetPoint+" 启动成功");
 		}else{
 			throw new Exception("tomcat"+targetPoint+" 启动失败！");
 		}
@@ -244,7 +244,7 @@ public class ScriptExecutor {
 				"cp -f /etc/nginx/loadbalance/nginx"+targetPoint+".conf /etc/nginx/nginx.conf",
 				"/usr/sbin/nginx -s reload"
 				},10,false);
-		System.out.println("切换nginx反向代理端口");
+		LogUtil.log("切换nginx反向代理端口");
 		
 		//#停掉老的节点
 		if(StringUtil.isNotEmpty(runningPoint)){
@@ -256,7 +256,7 @@ public class ScriptExecutor {
 				pid = pid !=null?pid.trim():"";
 			}
 
-			System.out.println("停止tomcat"+runningPoint);
+			LogUtil.log("停止tomcat"+runningPoint);
 		}
 		
 		//更新前端工程
@@ -273,7 +273,7 @@ public class ScriptExecutor {
 		//解压缩远程压缩包
 		Ajida.unzipRemotFile(connect,10,"/var/html/xjp-admin.zip", "/var/html/xjp-admin");
 		//清理
-		Logger.log(">>> clean folder again");
+		LogUtil.log(">>> clean folder again");
 		String[] cmds = new String[]{
 				"cd D:\\1-develop\\1-tool\\1-git\\2-repo\\xiangjiaoping-html\\xjp-admin",
 				"D:",
@@ -294,7 +294,7 @@ public class ScriptExecutor {
 			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
 			
 			//2.maven 打包
-			Logger.log(">>> maven package");
+			LogUtil.log(">>> maven package");
 			String[] cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
@@ -306,15 +306,15 @@ public class ScriptExecutor {
 			}
 			
 			//3.拷贝配置文件
-			Logger.log(">>> copy config files");
+			LogUtil.log(">>> copy config files");
 			String[] resourceFileList = new File(configDir).list();
 			for(String rf:resourceFileList){
 				FileUtil.copy(configDir+"\\"+rf, projectDir+"\\target\\"+projectName+"\\WEB-INF\\classes");
-				Logger.log("copy:"+configDir+"\\"+rf);
+				LogUtil.log("copy:"+configDir+"\\"+rf);
 			}
 			
 			//4.压缩打包
-			Logger.log(">>> compress files to war");
+			LogUtil.log(">>> compress files to war");
 			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war");
 
 		} catch (Exception e) {
@@ -331,7 +331,7 @@ public class ScriptExecutor {
 			String projectName = projectDir.substring(projectDir.lastIndexOf("\\")+1);
 			
 			//1.清理
-			Logger.log(">>> clean folder");
+			LogUtil.log(">>> clean folder");
 			String[] cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
@@ -343,7 +343,7 @@ public class ScriptExecutor {
 			} catch (Exception e) {}
 			
 			//2.fis 打包
-			Logger.log(">>> fis relase");
+			LogUtil.log(">>> fis relase");
 			cmds = new String[]{
 					"cd "+projectDir,
 					projectDir.substring(0,2),
@@ -354,15 +354,15 @@ public class ScriptExecutor {
 			} catch (Exception e) {}
 			
 			//3.拷贝配置文件
-			Logger.log(">>> copy config files");
+			LogUtil.log(">>> copy config files");
 			String[] resourceFileList = new File(configDir).list();
 			for(String rf:resourceFileList){
 				FileUtil.copy(configDir+"\\"+rf, configDir+"\\..");
-				Logger.log("copy:"+configDir+"\\"+rf);
+				LogUtil.log("copy:"+configDir+"\\"+rf);
 			}
 			
 			//4.压缩打包
-			Logger.log(">>> compress files to zip");
+			LogUtil.log(">>> compress files to zip");
 			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip");
 
 		} catch (Exception e) {

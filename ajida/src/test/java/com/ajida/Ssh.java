@@ -17,7 +17,7 @@ public class Ssh {
 		try {
 			SSHConfig cfg = new SSHConfig("192.168.199.45", "root", "ybsl1234");
 			conn = SSHUtil.connect(cfg);
-			System.out.println("connect success");
+			LogUtil.log("connect success");
 			Scanner sc = new Scanner(System.in);
 			List<String> cmdContent = new ArrayList<>();
 			while(true){
@@ -29,12 +29,12 @@ public class Ssh {
 					cmdContent.add(cmd);
 					try {
 						String exec = SSHUtil.exec(conn,cmdContent,10,true);
-						System.out.println(exec);
+						LogUtil.log(exec);
 						if(!cmd.toLowerCase().startsWith("cd ")){
 							cmdContent.remove(cmdContent.size()-1);
 						}
 					} catch (Exception e) {
-						System.out.println(e.getMessage());
+						LogUtil.log(e.getMessage());
 						if(cmdContent.size() > 0){
 							cmdContent.remove(cmdContent.size()-1);
 						}

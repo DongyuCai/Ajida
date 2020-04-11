@@ -145,7 +145,7 @@ public class SSHClient {
 			// 等待指令执行结束，毫秒
 	        sess.waitForCondition(ChannelCondition.EXIT_STATUS, timeout * 1000);
 			// 取得指令执行结束后的状态
-//			System.out.println(session.getExitStatus());
+//			LogUtil(session.getExitStatus());
 	        if(hasError){
 	        	throw new Exception(buf.toString());
 	        }
