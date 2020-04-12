@@ -14,10 +14,115 @@ import org.axe.util.StringUtil;
 import ch.ethz.ssh2.Connection;
 
 public class Ajida {
-	public static void main(String[] args) {
 
+	/**
+	 * 交换启动节点
+	 */
+	public static void exchangeServerPoint(SSHConfig sshConfig, String distDir,String projectName){
+		Connection sshConnection = null;
+		try {
+			// 获取链接
+			sshConnection = SSHUtil.connect(sshConfig);
+			if (sshConnection == null) {
+				throw new Exception("连接失败");
+			}
+			int timeout = 10;
+			//1.查看目前启动的是哪个节点
+			int pointIndexNow = 1;
+			String pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+pointIndexNow+" | grep java", timeout,
+					sshConnection);
+			if (StringUtil.isEmpty(pid)) {
+				// 如果不是节点1正启动着，就认为是节点2在运行，不管节点2是否真的在运行
+				pointIndexNow = 2;
+			}
+
+			//要启动的节点
+			int pointIndexStart = pointIndexNow==1?2:1;
+			int pointIndexStop = pointIndexNow==1?1:2;
+			
+			// 启动app
+			try {
+				SSHUtil.exec(sshConnection, new String[] { "cd " + distDir + "/" + projectName + "_"+ pointIndexStart, "chmod 777 -R *",
+						"dos2unix start.sh", "./start.sh" }, timeout, false);
+			} catch (Exception e) {
+			}
+			LogUtil.log("正在启动 " + projectName + "_"+ pointIndexStart);
+
+			// 等待启动成功
+			Set<String> tailSet = new HashSet<>();// 排除tail到的重复行内容
+			while (true) {
+				Thread.sleep(1000);
+				try {
+					String cat = SSHUtil.exec(sshConnection,
+							"tail -n10 " + distDir + "/" + projectName + "_"+ pointIndexStart + "/log.txt", timeout, true);
+					String[] splitRows = cat.split("\r\n");
+					for (String row : splitRows) {
+						if (!tailSet.contains(row)) {
+							LogUtil.log(row);
+						}
+					}
+					tailSet.clear();
+					for (String row : splitRows) {
+						tailSet.add(row);
+					}
+					if (cat.contains("Axe started success!")) {
+						LogUtil.log(">>> " + projectName + "_"+ pointIndexStart + "启动成功");
+						break;
+					}
+				} catch (Exception e) {
+					if (e.getMessage().toUpperCase().contains("NO SUCH FILE")) {
+						System.out.print(".");
+					}
+				}
+			}
+
+			// 先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
+			try {
+				SSHUtil.exec(sshConnection, "cp " + distDir + "/" + projectName + "_"+ pointIndexStart + "/nginx/* /etc/nginx/vhost",
+						timeout, false);
+				
+				String result = SSHUtil.exec(sshConnection, "/usr/sbin/nginx -c /etc/nginx/nginx.conf -t", timeout,
+						true);
+				if (!result.toUpperCase().contains("SUCCESSFUL")) {
+					throw new Exception("nginx 配置文件校验失败:\r\n" + result);
+				}
+			} catch (Exception e) {
+				if (e.getMessage().toUpperCase().contains("NO SUCH FILE OR DIRECTORY")) {
+					throw e;
+				}
+				if (e.getMessage().toUpperCase().contains("FAILED")) {
+					throw e;
+				}
+			}
+			
+			// 重新启动nginx
+			try {
+				SSHUtil.exec(sshConnection, "/usr/sbin/nginx -c /etc/nginx/nginx.conf -s reload", timeout, false);
+			} catch (Exception e) {
+			}
+			LogUtil.log(">>> Nginx已重启 ");
+
+			// 停掉老的app
+			pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+ pointIndexStop + " | grep java", timeout, sshConnection);
+			while (StringUtil.isNotEmpty(pid)) {
+				SSHUtil.exec(sshConnection, "kill -9 " + pid, timeout, false);
+				pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+ pointIndexStop + " | grep java", timeout, sshConnection);
+			}
+			LogUtil.log(">>> 已停止 " + projectName + "_"+ pointIndexStop);
+			LogUtil.log(">>> 切换完成 <<<");
+		} catch (Exception e) {
+			LogUtil.error(e);
+		} finally {
+			try {
+				if(sshConnection != null){
+					sshConnection.close();
+				}
+			} catch (Exception e2) {
+			}
+		}
+		
 	}
-
+	
 	/**
 	 * @param even
 	 *            环境，对应/config下的配置文件所在文件夹，比如test、pro
@@ -185,7 +290,7 @@ public class Ajida {
 			}
 			// 解压
 			unzipRemotFile(sshConnection, timeout, distDir + "/" + zipName + ".zip",
-					distDir + "/" + zipName);
+					distDir + "/" + stopZipName);
 
 			LogUtil.log(">>> 结束 <<<");
 		} catch (Exception e) {
