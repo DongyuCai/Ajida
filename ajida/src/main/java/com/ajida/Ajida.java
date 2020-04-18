@@ -38,7 +38,7 @@ public class Ajida {
 
 			//要启动的节点
 			int pointIndexStart = pointIndexNow==1?2:1;
-			int pointIndexStop = pointIndexNow==1?1:2;
+//			int pointIndexStop = pointIndexNow==1?1:2;
 			
 			// 启动app
 			try {
@@ -103,13 +103,13 @@ public class Ajida {
 			LogUtil.log(">>> Nginx已重启 ");
 
 			// 停掉老的app
-			pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+ pointIndexStop + " | grep java", timeout, sshConnection);
+			/*pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+ pointIndexStop + " | grep java", timeout, sshConnection);
 			while (StringUtil.isNotEmpty(pid)) {
 				SSHUtil.exec(sshConnection, "kill -9 " + pid, timeout, false);
 				pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+ pointIndexStop + " | grep java", timeout, sshConnection);
 			}
 			LogUtil.log(">>> 已停止 " + projectName + "_"+ pointIndexStop);
-			LogUtil.log(">>> 切换完成 <<<");
+			LogUtil.log(">>> 切换完成 <<<");*/
 		} catch (Exception e) {
 			LogUtil.error(e);
 		} finally {
@@ -138,10 +138,10 @@ public class Ajida {
 	 */
 	public static void axeProjectUpdate(String even, AxeAppConfig appConfig1, AxeAppConfig appConfig2,
 			String[] sdkProjectNameAry, SSHConfig sshConfig, String distDir) throws Exception {
-		axeProjectUpdate(true, even, appConfig1, appConfig2, sdkProjectNameAry, sshConfig, distDir);
+		axeProjectUpdate(true, true, even, appConfig1, appConfig2, sdkProjectNameAry, sshConfig, distDir);
 	}
 
-	public static void axeProjectUpdate(boolean needGitPull, String even, AxeAppConfig appConfig1,
+	public static void axeProjectUpdate(boolean needGitPull, boolean needStopAnotherPoint, String even, AxeAppConfig appConfig1,
 			AxeAppConfig appConfig2, String[] sdkProjectNameAry, SSHConfig sshConfig, String distDir)
 			throws Exception {
 		appConfig1.setIndex(1);// 设定好顺序
@@ -267,32 +267,22 @@ public class Ajida {
 			}
 
 			// 停掉老的app
-			AxeAppConfig stopConfig = appConfig1;// 要停掉的配置，默认节点1
-			if (stopConfig.getIndex() == appConfig.getIndex()) {
-				// 如果要停掉的正好是刚启动的，则停掉另一个
-				stopConfig = appConfig2;
-			}
-			String stopZipName = projectName + "_" + stopConfig.getIndex();
-			pid = SSHUtil.getPid(distDir + "/" + stopZipName + " | grep java", timeout, sshConnection);
-			while (StringUtil.isNotEmpty(pid)) {
-				SSHUtil.exec(sshConnection, "kill -9 " + pid, timeout, false);
+			//等待10秒钟，等待所有请求已经处理完毕
+			if(needStopAnotherPoint){
+				Thread.sleep(10000);
+				AxeAppConfig stopConfig = appConfig1;// 要停掉的配置，默认节点1
+				if (stopConfig.getIndex() == appConfig.getIndex()) {
+					// 如果要停掉的正好是刚启动的，则停掉另一个
+					stopConfig = appConfig2;
+				}
+				String stopZipName = projectName + "_" + stopConfig.getIndex();
 				pid = SSHUtil.getPid(distDir + "/" + stopZipName + " | grep java", timeout, sshConnection);
+				while (StringUtil.isNotEmpty(pid)) {
+					SSHUtil.exec(sshConnection, "kill -9 " + pid, timeout, false);
+					pid = SSHUtil.getPid(distDir + "/" + stopZipName + " | grep java", timeout, sshConnection);
+				}
+				LogUtil.log(">>> 已停止 " + stopZipName);
 			}
-			LogUtil.log(">>> 已停止 " + stopZipName);
-
-			// 同时跟新掉老代码
-			// 删除老的文件夹
-			LogUtil.log(">>> 更新 " + stopZipName+" 代码");
-			try {
-				SSHUtil.exec(sshConnection, "rm -rf " + distDir + "/" + stopZipName, timeout, false);
-			} catch (Exception e) {
-				LogUtil.error(e);
-			}
-			// 解压
-			unzipRemotFile(sshConnection, timeout, distDir + "/" + zipName + ".zip",
-					distDir + "/" + stopZipName);
-
-			LogUtil.log(">>> 结束 <<<");
 		} catch (Exception e) {
 			throw e;
 		} finally {
