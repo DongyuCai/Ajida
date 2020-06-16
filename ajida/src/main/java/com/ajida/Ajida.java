@@ -497,7 +497,7 @@ public class Ajida {
 			// 4.拷贝配置文件
 			LogUtil.log(">>> copy config files");
 			cmds = new String[] { "cd " + projectPath, projectPath.substring(0, 2),
-					"copy " + configPath + "\\*.*" + " " + projectPath + "\\target\\" + projectName + "\\" };
+					"xcopy " + configPath + " " + projectPath + "\\target\\" + projectName + " /e" };
 			CmdUtil.exec(cmds);
 
 			// 5.需要特殊处理下nginx配置文件
