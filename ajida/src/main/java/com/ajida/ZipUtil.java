@@ -3,6 +3,8 @@ package com.ajida;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
@@ -23,11 +25,11 @@ public class ZipUtil {
 	 *            未压缩的文件夹
 	 * @throws Exception
 	 */
-	public static void compressDir(File sourceFile,String zipFileName)throws Exception {
+	public static void compressDir(File sourceFile,String zipFileName,Set<String> excludes)throws Exception {
 		ZipOutputStream out = null;
 		try {
 			out = new ZipOutputStream(new FileOutputStream(zipFileName));
-			compressDir(out, sourceFile, "");
+			compressDir(out, sourceFile, "", excludes);
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -49,37 +51,46 @@ public class ZipUtil {
 	 *            父级文件夹名称
 	 * @return
 	 */
-	private static void compressDir(ZipOutputStream out, File sourceFile, String base) throws Exception {
-		if (sourceFile.isDirectory()) {
-			// 判断是否为目录
-			File[] fl = sourceFile.listFiles();
-			if(StringUtil.isNotEmpty(base)){
-				out.putNextEntry(new ZipEntry(base + "/")); // 创建了一个父条目并将流指定到这一个条目的开始处
+	private static void compressDir(ZipOutputStream out, File sourceFile, String base, Set<String> excludes) throws Exception {
+		boolean needExclude = false;
+		for(String name:excludes){
+			if(sourceFile.getName().contains(name)){
+				needExclude = true;
+				break;
 			}
-			base = base.length() == 0 ? "" : base + "/"; // 这个判断base是否存在，如果存在带到下一级目录共同创建下下一级条目
-			for (int i = 0; i < fl.length; i++) {
-				compressDir(out, fl[i], base + fl[i].getName());
-			}
+		}
+		if(!needExclude){
+			if (sourceFile.isDirectory()) {
+				// 判断是否为目录
+				File[] fl = sourceFile.listFiles();
+				if(StringUtil.isNotEmpty(base)){
+					out.putNextEntry(new ZipEntry(base + "/")); // 创建了一个父条目并将流指定到这一个条目的开始处
+				}
+				base = base.length() == 0 ? "" : base + "/"; // 这个判断base是否存在，如果存在带到下一级目录共同创建下下一级条目
+				for (int i = 0; i < fl.length; i++) {
+					compressDir(out, fl[i], base + fl[i].getName(), excludes);
+				}
 
-		} else {
-			// 压缩目录中的所有文件
-			out.putNextEntry(new ZipEntry(base));
-			FileInputStream in = new FileInputStream(sourceFile);
-			LogUtil.log("compress:"+base);
-			byte[] b = new byte[1024 * 1024];
-			int len = 0;
-			while ((len = in.read(b)) != -1) {
-				out.write(b, 0, len);
-				out.flush();
-			}
-			in.close();
+			} else {
+				// 压缩目录中的所有文件
+				out.putNextEntry(new ZipEntry(base));
+				FileInputStream in = new FileInputStream(sourceFile);
+				LogUtil.log("compress:"+base);
+				byte[] b = new byte[1024 * 1024];
+				int len = 0;
+				while ((len = in.read(b)) != -1) {
+					out.write(b, 0, len);
+					out.flush();
+				}
+				in.close();
 
+			}
 		}
 	}
 
 	public static void main(String[] args) {
 		try {
-			compressDir(new File("D:\\tmp\\test"),"D:\\tmp\\xjp-user.war");
+			compressDir(new File("D:\\tmp\\test"),"D:\\tmp\\xjp-user.war",new HashSet<String>());
 		} catch (Exception e) {
 			LogUtil.error(e);
 		}

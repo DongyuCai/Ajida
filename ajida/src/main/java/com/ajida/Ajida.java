@@ -408,7 +408,7 @@ public class Ajida {
 			// 压缩打包
 			LogUtil.log(">>> compress files to zip");
 			ZipUtil.compressDir(new File(projectLocalDir + "\\" + projectName),
-					projectLocalDir + "\\" + projectName + ".zip");
+					projectLocalDir + "\\" + projectName + ".zip",new HashSet<String>());
 
 			// 上传新的包
 			sshFileUpload(sshConnection, projectLocalDir + "\\" + projectName + ".zip", remoteProjectDir);
@@ -563,7 +563,7 @@ public class Ajida {
 			// 6.压缩打包
 			LogUtil.log(">>> compress project to zip");
 			ZipUtil.compressDir(new File(projectPath + "\\target\\" + projectName),
-					projectPath + "\\target\\" + zipName + ".zip");
+					projectPath + "\\target\\" + zipName + ".zip",new HashSet<String>());
 
 			return nginxConfigDir.exists();
 		} catch (Exception e) {
