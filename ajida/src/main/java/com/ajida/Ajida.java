@@ -515,8 +515,8 @@ public class Ajida {
 						writer = new BufferedWriter(new FileWriter(new File(copyFileDir, nginxConfigFile.getName())));
 						String line = reader.readLine();
 						while (line != null) {
-							for (String key : appConfig.getNginxParams().keySet()) {
-								line = line.replaceAll("\\$\\{ *" + key + " *\\}", appConfig.getNginxParams().get(key));
+							for (String key : appConfig.getConfigParams().keySet()) {
+								line = line.replaceAll("\\$\\{ *" + key + " *\\}", appConfig.getConfigParams().get(key));
 							}
 							writer.write(line);
 							writer.newLine();
