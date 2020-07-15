@@ -535,6 +535,9 @@ public class Ajida {
 							writer = new BufferedWriter(new FileWriter(configFile));
 							String[] split = buf.toString().split("#LINE#");
 							for(String line:split){
+								for (String key : appConfig.getConfigParams().keySet()) {
+									line = line.replaceAll("\\$\\{ *" + key + " *\\}", appConfig.getConfigParams().get(key));
+								}
 								writer.write(line);
 								writer.newLine();
 							}
