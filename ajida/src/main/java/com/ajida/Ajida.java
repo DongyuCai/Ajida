@@ -182,7 +182,10 @@ public class Ajida {
 			// mvn打包工程
 			String zipName = projectName + "_" + appConfig.getIndex();
 			boolean needConfigNginx = mvnPackageJarApplication(rootPath + "\\" + projectName, rootPath + "\\" + projectName + "\\config\\" + even,
-					appConfig, zipName);
+					appConfig);
+			
+			// 压缩工程
+			compressProjectZip(rootPath, projectName, zipName);
 
 			// 上传到服务器
 			sshFileUpload(sshConnection, rootPath + "\\" + projectName + "\\target\\" + zipName + ".zip",
@@ -467,8 +470,7 @@ public class Ajida {
 	 * 
 	 * @throws Exception
 	 */
-	public static boolean mvnPackageJarApplication(String projectPath, String configPath, AxeAppConfig appConfig,
-			String zipName) throws Exception {
+	public static boolean mvnPackageJarApplication(String projectPath, String configPath, AxeAppConfig appConfig) throws Exception {
 		try {
 			String projectName = projectPath.substring(projectPath.lastIndexOf("\\") + 1);
 
@@ -609,15 +611,18 @@ public class Ajida {
 							+ appConfig.getApplicationMainClassAndStartParams() + " ^&>>start.sh" };
 			CmdUtil.exec(cmds);
 
-			// 6.压缩打包
-			LogUtil.log(">>> compress project to zip");
-			ZipUtil.compressDir(new File(projectPath + "\\target\\" + projectName),
-					projectPath + "\\target\\" + zipName + ".zip",new HashSet<String>());
-
 			return nginxConfigDir.exists();
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	public static void compressProjectZip(String projectPath,String projectName,String zipName) throws Exception{
+		// 6.压缩打包
+		LogUtil.log(">>> compress project to zip");
+		ZipUtil.compressDir(new File(projectPath + "\\target\\" + projectName),
+				projectPath + "\\target\\" + zipName + ".zip",new HashSet<String>());
+
 	}
 
 	public static void sshFileBackup(Connection conn, int timeout, String remoteFileDir, String backupFileDir)
