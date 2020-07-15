@@ -503,7 +503,7 @@ public class Ajida {
 			CmdUtil.exec(cmds);
 
 			// 4.1替换掉配置文件中的变量
-			File configDir = new File(configPath + " " + projectPath + "\\target\\" + projectName);
+			File configDir = new File(projectPath + "\\target\\" + projectName);
 			for (File configFile : configDir.listFiles()) {
 				if(configFile.isFile() && configFile.getName().endsWith(".properties")){
 					StringBuilder buf = new StringBuilder();
