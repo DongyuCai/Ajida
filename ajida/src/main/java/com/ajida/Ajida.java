@@ -499,7 +499,7 @@ public class Ajida {
 			cmds = new String[] { "cd " + projectPath, projectPath.substring(0, 2),
 					"xcopy " + configPath + " " + projectPath + "\\target\\" + projectName + " /e" };
 			CmdUtil.exec(cmds);
-			
+
 			// 4.1替换掉配置文件中的变量
 			File configDir = new File(configPath + " " + projectPath + "\\target\\" + projectName);
 			for (File configFile : configDir.listFiles()) {
