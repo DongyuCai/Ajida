@@ -499,6 +499,55 @@ public class Ajida {
 			cmds = new String[] { "cd " + projectPath, projectPath.substring(0, 2),
 					"xcopy " + configPath + " " + projectPath + "\\target\\" + projectName + " /e" };
 			CmdUtil.exec(cmds);
+			
+			// 4.1替换掉配置文件中的变量
+			File configDir = new File(configPath + " " + projectPath + "\\target\\" + projectName);
+			for (File configFile : configDir.listFiles()) {
+				if(configFile.isFile() && configFile.getName().endsWith(".properties")){
+					StringBuilder buf = new StringBuilder();
+					BufferedReader reader = null;
+					try {
+						reader = new BufferedReader(new FileReader(configFile));
+						String line = reader.readLine();
+						while(line != null){
+							if(buf.length() > 0){
+								buf.append("#LINE#");
+							}
+							buf.append(line);
+							
+							line = reader.readLine();
+						}
+					} catch (Exception e) {
+						LogUtil.error(e);
+					} finally {
+						if(reader != null){
+							try {
+								reader.close();
+							} catch (Exception e2) {}
+						}
+					}
+					
+					if(buf.length() > 0){
+						BufferedWriter writer = null;
+						try{
+							writer = new BufferedWriter(new FileWriter(configFile));
+							String[] split = buf.toString().split("#LINE#");
+							for(String line:split){
+								writer.write(line);
+								writer.newLine();
+							}
+						} catch (Exception e) {
+							LogUtil.error(e);
+						} finally {
+							if(writer != null){
+								try {
+									writer.close();
+								} catch (Exception e2) {}
+							}
+						}
+					}
+				}
+			}
 
 			// 5.需要特殊处理下nginx配置文件
 			File nginxConfigDir = new File(configPath + "\\nginx");
