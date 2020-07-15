@@ -617,7 +617,8 @@ public class Ajida {
 		}
 	}
 	
-	public static void compressProjectZip(String projectPath,String projectName,String zipName) throws Exception{
+	public static void compressProjectZip(String rootPath,String projectName,String zipName) throws Exception{
+		String projectPath = rootPath + "\\" + projectName;
 		// 6.压缩打包
 		LogUtil.log(">>> compress project to zip");
 		ZipUtil.compressDir(new File(projectPath + "\\target\\" + projectName),
