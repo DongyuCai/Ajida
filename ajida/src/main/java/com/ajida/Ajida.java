@@ -608,9 +608,11 @@ public class Ajida {
 					"echo pause>>start.bat",
 					// sh
 					"echo SHELL_FOLDER=$(cd \"$(dirname \"$0\")\";pwd)>>start.sh",
+					"echo CLASSPATH_=\"\";>>start.sh",
 					"echo for i in $SHELL_FOLDER/lib/*.jar;>>start.sh",
-					"echo do CLASSPATH=$i:$CLASSPATH;>>start.sh", "echo done>>start.sh",
-					"echo CLASSPATH=:$CLASSPATH>>start.sh", "echo java -classpath .:${CLASSPATH} "
+					"echo do CLASSPATH_=$i:$CLASSPATH_;>>start.sh", 
+					"echo done>>start.sh",
+					"echo CLASSPATH_=$CLASSPATH:$CLASSPATH_>>start.sh", "echo java -classpath .:${CLASSPATH_} "
 							+ appConfig.getApplicationMainClassAndStartParams() + " ^&>>start.sh" };
 			CmdUtil.exec(cmds);
 
