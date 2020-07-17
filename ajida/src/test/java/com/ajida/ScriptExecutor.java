@@ -316,7 +316,7 @@ public class ScriptExecutor {
 			
 			//4.压缩打包
 			LogUtil.log(">>> compress files to war");
-			ZipUtil.compressDir(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war",new HashSet<String>());
+			ZipUtil.zip(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war",new HashSet<String>());
 
 		} catch (Exception e) {
 			throw e;
@@ -364,7 +364,7 @@ public class ScriptExecutor {
 			
 			//4.压缩打包
 			LogUtil.log(">>> compress files to zip");
-			ZipUtil.compressDir(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip",new HashSet<String>());
+			ZipUtil.zip(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip",new HashSet<String>());
 
 		} catch (Exception e) {
 			throw e;
