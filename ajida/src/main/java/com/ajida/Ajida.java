@@ -609,7 +609,7 @@ public class Ajida {
 					// sh
 					"echo SHELL_FOLDER=$(cd \"$(dirname \"$0\")\";pwd)>>start.sh",
 					"echo for i in $SHELL_FOLDER/lib/*.jar;>>start.sh",
-					"echo do CLASSPATH=$i:\"$CLASSPATH\";>>start.sh", "echo done>>start.sh",
+					"echo do CLASSPATH=$i:$CLASSPATH;>>start.sh", "echo done>>start.sh",
 					"echo CLASSPATH=:$CLASSPATH>>start.sh", "echo java -classpath .:${CLASSPATH} "
 							+ appConfig.getApplicationMainClassAndStartParams() + " ^&>>start.sh" };
 			CmdUtil.exec(cmds);
