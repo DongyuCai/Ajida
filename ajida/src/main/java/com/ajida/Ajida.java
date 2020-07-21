@@ -647,7 +647,7 @@ public class Ajida {
 	public static void unzipRemotFile(Connection conn, int timeout, String remoteFileDir, String targetDir)
 			throws Exception {
 		LogUtil.log(">>> unzip zip");
-		SSHUtil.exec(conn, new String[] { "unzip -d " + targetDir + " " + remoteFileDir }, timeout, false);
+		SSHUtil.exec(conn, new String[] { "unzip -o -d " + targetDir + " " + remoteFileDir }, timeout, false);
 	}
 
 }
