@@ -6,8 +6,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
@@ -62,9 +60,7 @@ public class ZipUtil {
 		if(includeRegs != null && includeRegs.length > 0){
 			needExclude = true;
 			for(String reg : includeRegs){
-				Pattern pattern = Pattern.compile(reg);
-				Matcher matcher = pattern.matcher(sourceFile.getAbsolutePath());
-				if(matcher.find()){
+				if(sourceFile.getAbsolutePath().contains(reg)){
 					needExclude = false;//匹配上了include，就不需要排除了
 					break;
 				}
@@ -73,9 +69,7 @@ public class ZipUtil {
 		if(!needExclude && excludeRegs != null && excludeRegs.length > 0){
 			//检测完了include，还需要检测exclude，是不是明确要排除掉的
 			for (String reg : excludeRegs) {
-				Pattern pattern = Pattern.compile(reg);
-				Matcher matcher = pattern.matcher(sourceFile.getAbsolutePath());
-				if(matcher.find()){
+				if(sourceFile.getAbsolutePath().contains(reg)){
 					needExclude = true;
 					break;
 				}
