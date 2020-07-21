@@ -411,7 +411,7 @@ public class Ajida {
 			// 压缩打包
 			LogUtil.log(">>> compress files to zip");
 			ZipUtil.zip(new File(projectLocalDir + "\\" + projectName),
-					projectLocalDir + "\\" + projectName + ".zip",new HashSet<String>());
+					projectLocalDir + "\\" + projectName + ".zip",null,null);
 
 			// 上传新的包
 			sshFileUpload(sshConnection, projectLocalDir + "\\" + projectName + ".zip", remoteProjectDir);
@@ -627,7 +627,7 @@ public class Ajida {
 		// 6.压缩打包
 		LogUtil.log(">>> compress project to zip");
 		ZipUtil.zip(new File(projectPath + "\\target\\" + projectName),
-				projectPath + "\\target\\" + zipName + ".zip",new HashSet<String>());
+				projectPath + "\\target\\" + zipName + ".zip",null,null);
 
 	}
 

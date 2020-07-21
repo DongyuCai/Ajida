@@ -3,7 +3,6 @@ package com.ajida;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Scanner;
 
 import org.axe.util.FileUtil;
@@ -316,7 +315,7 @@ public class ScriptExecutor {
 			
 			//4.压缩打包
 			LogUtil.log(">>> compress files to war");
-			ZipUtil.zip(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war",new HashSet<String>());
+			ZipUtil.zip(new File(projectDir+"\\target\\"+projectName), projectDir+"\\target\\"+projectName+".war",null,null);
 
 		} catch (Exception e) {
 			throw e;
@@ -364,7 +363,7 @@ public class ScriptExecutor {
 			
 			//4.压缩打包
 			LogUtil.log(">>> compress files to zip");
-			ZipUtil.zip(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip",new HashSet<String>());
+			ZipUtil.zip(new File(projectDir+"\\"+projectName), projectDir+"\\"+projectName+".zip",null, null);
 
 		} catch (Exception e) {
 			throw e;

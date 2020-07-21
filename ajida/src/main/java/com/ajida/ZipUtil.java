@@ -6,7 +6,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
-import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
@@ -28,11 +29,11 @@ public class ZipUtil {
 	 *            未压缩的文件夹
 	 * @throws Exception
 	 */
-	public static void zip(File sourceFile, String zipFileName, Set<String> excludes) throws Exception {
+	public static void zip(File sourceFile, String zipFileName, String[] includeRegs, String[] excludeRegs) throws Exception {
 		ZipOutputStream out = null;
 		try {
 			out = new ZipOutputStream(new FileOutputStream(zipFileName));
-			zip(out, sourceFile, "", excludes);
+			zip(out, sourceFile, "", includeRegs, excludeRegs);
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -55,14 +56,32 @@ public class ZipUtil {
 	 *            父级文件夹名称
 	 * @return
 	 */
-	private static void zip(ZipOutputStream out, File sourceFile, String base, Set<String> excludes) throws Exception {
-		boolean needExclude = false;
-		for (String name : excludes) {
-			if (sourceFile.getName().contains(name)) {
-				needExclude = true;
-				break;
+	private static void zip(ZipOutputStream out, File sourceFile, String base, String[] includeRegs, String[] excludeRegs) throws Exception {
+		boolean needExclude = false;//默认不需要排除
+		//如果不在includes里，就需要排除
+		if(includeRegs != null && includeRegs.length > 0){
+			needExclude = true;
+			for(String reg : includeRegs){
+				Pattern pattern = Pattern.compile(reg);
+				Matcher matcher = pattern.matcher(sourceFile.getAbsolutePath());
+				if(matcher.find()){
+					needExclude = false;//匹配上了include，就不需要排除了
+					break;
+				}
 			}
 		}
+		if(!needExclude && excludeRegs != null && excludeRegs.length > 0){
+			//检测完了include，还需要检测exclude，是不是明确要排除掉的
+			for (String reg : excludeRegs) {
+				Pattern pattern = Pattern.compile(reg);
+				Matcher matcher = pattern.matcher(sourceFile.getAbsolutePath());
+				if(matcher.find()){
+					needExclude = true;
+					break;
+				}
+			}
+		}
+		
 		if (!needExclude) {
 			if (sourceFile.isDirectory()) {
 				// 判断是否为目录
@@ -72,7 +91,7 @@ public class ZipUtil {
 				}
 				base = base.length() == 0 ? "" : base + "/"; // 这个判断base是否存在，如果存在带到下一级目录共同创建下下一级条目
 				for (int i = 0; i < fl.length; i++) {
-					zip(out, fl[i], base + fl[i].getName(), excludes);
+					zip(out, fl[i], base + fl[i].getName(), includeRegs, excludeRegs);
 				}
 
 			} else {
