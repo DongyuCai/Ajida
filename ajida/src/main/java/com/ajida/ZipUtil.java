@@ -100,7 +100,19 @@ public class ZipUtil {
 					out.flush();
 				}
 				in.close();
-
+			}
+		}else{
+			//就是说被排除了，但是排除了，也需要看看如果是目录，里面有没有要的
+			if (sourceFile.isDirectory()) {
+				// 判断是否为目录
+				File[] fl = sourceFile.listFiles();
+				if (StringUtil.isNotEmpty(base)) {
+					out.putNextEntry(new ZipEntry(base + "/")); // 创建了一个父条目并将流指定到这一个条目的开始处
+				}
+				base = base.length() == 0 ? "" : base + "/"; // 这个判断base是否存在，如果存在带到下一级目录共同创建下下一级条目
+				for (int i = 0; i < fl.length; i++) {
+					zip(out, fl[i], base + fl[i].getName(), includeRegs, excludeRegs);
+				}
 			}
 		}
 	}
