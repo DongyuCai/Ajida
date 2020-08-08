@@ -497,9 +497,14 @@ public class Ajida {
 			CmdUtil.exec(cmds);
 
 			// 4.拷贝配置文件
-			LogUtil.log(">>> copy config files");
+			LogUtil.log(">>> copy even config files");
 			cmds = new String[] { "cd " + projectPath, projectPath.substring(0, 2),
 					"xcopy " + configPath + " " + projectPath + "\\target\\" + projectName + " /e" };
+			CmdUtil.exec(cmds);
+			LogUtil.log(">>> copy common config files");
+			String commonConfigPath = configPath.substring(0,configPath.lastIndexOf("\\")+1)+"common";
+			cmds = new String[] { "cd " + projectPath, projectPath.substring(0, 2),
+					"xcopy " + commonConfigPath + " " + projectPath + "\\target\\" + projectName + " /e" };
 			CmdUtil.exec(cmds);
 
 			// 4.1替换掉配置文件中的变量
