@@ -37,7 +37,6 @@
 		<artifactId>axe</artifactId>
 		<version>19.8.6</version>
 	</dependency>
-	  	
   </dependencies>
   
   <build>
