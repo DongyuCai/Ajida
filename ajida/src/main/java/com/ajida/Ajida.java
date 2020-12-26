@@ -18,7 +18,7 @@ public class Ajida {
 	/**
 	 * 交换启动节点
 	 */
-	public static void exchangeServerPoint(SSHConfig sshConfig, String distDir,String projectName){
+	public static void exchangeServerPoint(SSHConfig sshConfig, String distDir, String projectName) {
 		Connection sshConnection = null;
 		try {
 			// 获取链接
@@ -27,26 +27,26 @@ public class Ajida {
 				throw new Exception("连接失败");
 			}
 			int timeout = 10;
-			//1.查看目前启动的是哪个节点
+			// 1.查看目前启动的是哪个节点
 			int pointIndexNow = 1;
-			String pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+pointIndexNow+" | grep java", timeout,
+			String pid = SSHUtil.getPid(distDir + "/" + projectName + "_" + pointIndexNow + " | grep java", timeout,
 					sshConnection);
 			if (StringUtil.isEmpty(pid)) {
 				// 如果不是节点1正启动着，就认为是节点2在运行，不管节点2是否真的在运行
 				pointIndexNow = 2;
 			}
 
-			//要启动的节点
-			int pointIndexStart = pointIndexNow==1?2:1;
-//			int pointIndexStop = pointIndexNow==1?1:2;
-			
+			// 要启动的节点
+			int pointIndexStart = pointIndexNow == 1 ? 2 : 1;
+			// int pointIndexStop = pointIndexNow==1?1:2;
+
 			// 启动app
 			try {
-				SSHUtil.exec(sshConnection, new String[] { "cd " + distDir + "/" + projectName + "_"+ pointIndexStart, "chmod 777 -R *",
-						"dos2unix start.sh", "./start.sh" }, timeout, false);
+				SSHUtil.exec(sshConnection, new String[] { "cd " + distDir + "/" + projectName + "_" + pointIndexStart,
+						"chmod 777 -R *", "dos2unix start.sh", "./start.sh" }, timeout, false);
 			} catch (Exception e) {
 			}
-			LogUtil.log("正在启动 " + projectName + "_"+ pointIndexStart);
+			LogUtil.log("正在启动 " + projectName + "_" + pointIndexStart);
 
 			// 等待启动成功
 			Set<String> tailSet = new HashSet<>();// 排除tail到的重复行内容
@@ -54,7 +54,8 @@ public class Ajida {
 				Thread.sleep(1000);
 				try {
 					String cat = SSHUtil.exec(sshConnection,
-							"tail -n10 " + distDir + "/" + projectName + "_"+ pointIndexStart + "/log.txt", timeout, true);
+							"tail -n10 " + distDir + "/" + projectName + "_" + pointIndexStart + "/log.txt", timeout,
+							true);
 					String[] splitRows = cat.split("\r\n");
 					for (String row : splitRows) {
 						if (!tailSet.contains(row)) {
@@ -66,7 +67,7 @@ public class Ajida {
 						tailSet.add(row);
 					}
 					if (cat.contains("Axe started success!")) {
-						LogUtil.log(">>> " + projectName + "_"+ pointIndexStart + "启动成功");
+						LogUtil.log(">>> " + projectName + "_" + pointIndexStart + "启动成功");
 						break;
 					}
 				} catch (Exception e) {
@@ -78,9 +79,10 @@ public class Ajida {
 
 			// 先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
 			try {
-				SSHUtil.exec(sshConnection, "cp " + distDir + "/" + projectName + "_"+ pointIndexStart + "/nginx/* /etc/nginx/vhost",
+				SSHUtil.exec(sshConnection,
+						"cp " + distDir + "/" + projectName + "_" + pointIndexStart + "/nginx/* /etc/nginx/vhost",
 						timeout, false);
-				
+
 				String result = SSHUtil.exec(sshConnection, "/usr/sbin/nginx -c /etc/nginx/nginx.conf -t", timeout,
 						true);
 				if (!result.toUpperCase().contains("SUCCESSFUL")) {
@@ -94,7 +96,7 @@ public class Ajida {
 					throw e;
 				}
 			}
-			
+
 			// 重新启动nginx
 			try {
 				SSHUtil.exec(sshConnection, "/usr/sbin/nginx -c /etc/nginx/nginx.conf -s reload", timeout, false);
@@ -103,26 +105,28 @@ public class Ajida {
 			LogUtil.log(">>> Nginx已重启 ");
 
 			// 停掉老的app
-			/*pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+ pointIndexStop + " | grep java", timeout, sshConnection);
-			while (StringUtil.isNotEmpty(pid)) {
-				SSHUtil.exec(sshConnection, "kill -9 " + pid, timeout, false);
-				pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+ pointIndexStop + " | grep java", timeout, sshConnection);
-			}
-			LogUtil.log(">>> 已停止 " + projectName + "_"+ pointIndexStop);
-			LogUtil.log(">>> 切换完成 <<<");*/
+			/*
+			 * pid = SSHUtil.getPid(distDir + "/" + projectName + "_"+
+			 * pointIndexStop + " | grep java", timeout, sshConnection); while
+			 * (StringUtil.isNotEmpty(pid)) { SSHUtil.exec(sshConnection,
+			 * "kill -9 " + pid, timeout, false); pid = SSHUtil.getPid(distDir +
+			 * "/" + projectName + "_"+ pointIndexStop + " | grep java",
+			 * timeout, sshConnection); } LogUtil.log(">>> 已停止 " + projectName +
+			 * "_"+ pointIndexStop); LogUtil.log(">>> 切换完成 <<<");
+			 */
 		} catch (Exception e) {
 			LogUtil.error(e);
 		} finally {
 			try {
-				if(sshConnection != null){
+				if (sshConnection != null) {
 					sshConnection.close();
 				}
 			} catch (Exception e2) {
 			}
 		}
-		
+
 	}
-	
+
 	/**
 	 * @param even
 	 *            环境，对应/config下的配置文件所在文件夹，比如test、pro
@@ -133,7 +137,8 @@ public class Ajida {
 	 * @param sdkProjectNameAry
 	 *            依赖的sdk，需要安装的
 	 * @param sshConfig
-	 * @param distDir 发布目录
+	 * @param distDir
+	 *            发布目录
 	 * @throws Exception
 	 */
 	public static void axeProjectUpdate(String even, AxeAppConfig appConfig1, AxeAppConfig appConfig2,
@@ -141,9 +146,9 @@ public class Ajida {
 		axeProjectUpdate(true, true, even, appConfig1, appConfig2, sdkProjectNameAry, sshConfig, distDir);
 	}
 
-	public static void axeProjectUpdate(boolean needGitPull, boolean needStopAnotherPoint, String even, AxeAppConfig appConfig1,
-			AxeAppConfig appConfig2, String[] sdkProjectNameAry, SSHConfig sshConfig, String distDir)
-			throws Exception {
+	public static void axeProjectUpdate(boolean needGitPull, boolean needStopAnotherPoint, String even,
+			AxeAppConfig appConfig1, AxeAppConfig appConfig2, String[] sdkProjectNameAry, SSHConfig sshConfig,
+			String distDir) throws Exception {
 		appConfig1.setIndex(1);// 设定好顺序
 		appConfig2.setIndex(2);
 
@@ -154,16 +159,15 @@ public class Ajida {
 		}
 		int timeout = 10;
 		try {
-//			SSHUtil.exec(sshConnection, "/", timeout, true);
-			
+			// SSHUtil.exec(sshConnection, "/", timeout, true);
+
 			String path = new File("").getAbsolutePath();
 			String rootPath = path.substring(0, path.lastIndexOf("\\"));
 			String projectName = path.substring(path.lastIndexOf("\\") + 1);
 
 			// 根据服务器当前情况，选择使用appConfig1或者appConfig2
 			AxeAppConfig appConfig = appConfig1;// 默认使用配置1
-			String pid = SSHUtil.getPid(distDir + "/" + projectName + "_1 | grep java", timeout,
-					sshConnection);
+			String pid = SSHUtil.getPid(distDir + "/" + projectName + "_1 | grep java", timeout, sshConnection);
 			if (StringUtil.isNotEmpty(pid)) {
 				// 如果查到了配置1 的启动进程，则使用配置2
 				appConfig = appConfig2;
@@ -181,15 +185,14 @@ public class Ajida {
 
 			// mvn打包工程
 			String zipName = projectName + "_" + appConfig.getIndex();
-			boolean needConfigNginx = mvnPackageJarApplication(rootPath + "\\" + projectName, rootPath + "\\" + projectName + "\\config\\" + even,
+			mvnPackageJarApplication(rootPath + "\\" + projectName, rootPath + "\\" + projectName + "\\config\\" + even,
 					appConfig);
-			
+
 			// 压缩工程
 			compressProjectZip(rootPath, projectName, zipName);
 
 			// 上传到服务器
-			sshFileUpload(sshConnection, rootPath + "\\" + projectName + "\\target\\" + zipName + ".zip",
-					distDir);
+			sshFileUpload(sshConnection, rootPath + "\\" + projectName + "\\target\\" + zipName + ".zip", distDir);
 
 			// 删除远程文件夹
 			try {
@@ -199,15 +202,18 @@ public class Ajida {
 			}
 
 			// 解压新包
-			unzipRemotFile(sshConnection, timeout, distDir + "/" + zipName + ".zip",
-					distDir + "/" + zipName);
+			unzipRemotFile(sshConnection, timeout, distDir + "/" + zipName + ".zip", distDir + "/" + zipName);
 
-			// 先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
-			if(needConfigNginx){
+			// 如果有nginx配置文件，先检查下文件没有问题
+			File nginxConfigDir = new File(rootPath + "\\" + projectName + "\\config\\" + even + "\\nginx");
+			boolean needReConfigNginx = nginxConfigDir.exists() && nginxConfigDir.listFiles().length > 0;
+			if (needReConfigNginx) {
 				try {
-					SSHUtil.exec(sshConnection, "cp " + distDir + "/" + zipName + "/nginx/* /etc/nginx/vhost",
-							timeout, false);
-					
+					// 拷贝nginx配置文件
+					SSHUtil.exec(sshConnection, "cp " + distDir + "/" + zipName + "/nginx/* /etc/nginx/vhost", timeout,
+							false);
+
+					// 校验nginx配置文件
 					String result = SSHUtil.exec(sshConnection, "/usr/sbin/nginx -c /etc/nginx/nginx.conf -t", timeout,
 							true);
 					if (!result.toUpperCase().contains("SUCCESSFUL")) {
@@ -236,8 +242,8 @@ public class Ajida {
 			while (true) {
 				Thread.sleep(1000);
 				try {
-					String cat = SSHUtil.exec(sshConnection,
-							"tail -n10 " + distDir + "/" + zipName + "/log.txt", timeout, true);
+					String cat = SSHUtil.exec(sshConnection, "tail -n10 " + distDir + "/" + zipName + "/log.txt",
+							timeout, true);
 					String[] splitRows = cat.split("\r\n");
 					for (String row : splitRows) {
 						if (!tailSet.contains(row)) {
@@ -259,7 +265,7 @@ public class Ajida {
 				}
 			}
 
-			if(needConfigNginx){
+			if (needReConfigNginx) {
 				// 重新启动nginx
 				// 先拷贝nginx配置文件并检查是否ok，如果nginx配置错误，则不能启动app
 				try {
@@ -270,8 +276,8 @@ public class Ajida {
 			}
 
 			// 停掉老的app
-			//等待10秒钟，等待所有请求已经处理完毕
-			if(needStopAnotherPoint){
+			// 等待10秒钟，等待所有请求已经处理完毕
+			if (needStopAnotherPoint) {
 				Thread.sleep(10000);
 				AxeAppConfig stopConfig = appConfig1;// 要停掉的配置，默认节点1
 				if (stopConfig.getIndex() == appConfig.getIndex()) {
@@ -298,28 +304,22 @@ public class Ajida {
 
 	public static void htmlProjectUpdate(String even, SSHConfig sshConfig, String projectLocalDir,
 			String remoteProjectDir) throws Exception {
-		htmlProjectUpdate(true, even, sshConfig, projectLocalDir, remoteProjectDir,null,null);
-	}
-	
-
-	public static void htmlProjectUpdate(
-			String even, SSHConfig sshConfig, String projectLocalDir,
-			String remoteProjectDir,
-			String[] stringReplaceFilePathAry,//可以绝对路径，也可以相对路径
-			String[] stringReplaceRuleAry//需要版本替换的结尾，不一定只能是后缀，可以带文件名甚至更多一点，甚至可以正则
-			) throws Exception {
-		htmlProjectUpdate(true, even, sshConfig, projectLocalDir, remoteProjectDir,stringReplaceFilePathAry,stringReplaceRuleAry);
+		htmlProjectUpdate(true, even, sshConfig, projectLocalDir, remoteProjectDir, null, null);
 	}
 
-	public static void htmlProjectUpdate(
-			boolean needGitPull, 
-			String even, 
-			SSHConfig sshConfig,
-			String projectLocalDir,
-			String remoteProjectDir,
-			String[] stringReplaceFilePathAry,//可以绝对路径，也可以相对路径，但是相对路径要以/或者\\开头
-			String[] stringReplaceRuleAry//字符串替换规则，规则：结果，比如\.js:.js?v=123 表示.js都替换成.js?v=123
-			) throws Exception {
+	public static void htmlProjectUpdate(String even, SSHConfig sshConfig, String projectLocalDir,
+			String remoteProjectDir, String[] stringReplaceFilePathAry, // 可以绝对路径，也可以相对路径
+			String[] stringReplaceRuleAry// 需要版本替换的结尾，不一定只能是后缀，可以带文件名甚至更多一点，甚至可以正则
+	) throws Exception {
+		htmlProjectUpdate(true, even, sshConfig, projectLocalDir, remoteProjectDir, stringReplaceFilePathAry,
+				stringReplaceRuleAry);
+	}
+
+	public static void htmlProjectUpdate(boolean needGitPull, String even, SSHConfig sshConfig, String projectLocalDir,
+			String remoteProjectDir, String[] stringReplaceFilePathAry, // 可以绝对路径，也可以相对路径，但是相对路径要以/或者\\开头
+			String[] stringReplaceRuleAry// 字符串替换规则，规则：结果，比如\.js:.js?v=123
+											// 表示.js都替换成.js?v=123
+	) throws Exception {
 		// 获取链接
 		Connection sshConnection = SSHUtil.connect(sshConfig);
 		if (sshConnection == null) {
@@ -360,26 +360,26 @@ public class Ajida {
 			CmdUtil.exec(cmds);
 
 			// 对文件进行规则内容替换
-			if(stringReplaceFilePathAry != null && stringReplaceRuleAry != null){
-				for(String filePath:stringReplaceFilePathAry){
-					filePath = filePath.replaceAll("/","\\\\");
-					if(filePath.startsWith("\\")){
-						//绝对路径进行补充
-						filePath = projectLocalDir + "\\" + projectName+filePath;
+			if (stringReplaceFilePathAry != null && stringReplaceRuleAry != null) {
+				for (String filePath : stringReplaceFilePathAry) {
+					filePath = filePath.replaceAll("/", "\\\\");
+					if (filePath.startsWith("\\")) {
+						// 绝对路径进行补充
+						filePath = projectLocalDir + "\\" + projectName + filePath;
 					}
-					
+
 					File oldFile = new File(filePath);
-					File tmpFile = new File(filePath+".ajida_"+StringUtil.getRandomString(4,"0123456789"));
+					File tmpFile = new File(filePath + ".ajida_" + StringUtil.getRandomString(4, "0123456789"));
 					oldFile.renameTo(tmpFile);
-					//开始复制并且替换版本号
+					// 开始复制并且替换版本号
 					BufferedReader reader = null;
 					BufferedWriter writer = null;
 					try {
 						reader = new BufferedReader(new FileReader(tmpFile));
 						writer = new BufferedWriter(new FileWriter(new File(filePath)));
 						String line = reader.readLine();
-						while(line != null){
-							for(String rule:stringReplaceRuleAry){
+						while (line != null) {
+							for (String rule : stringReplaceRuleAry) {
 								String[] split = rule.split(":");
 								line = line.replaceAll(split[0], split[1]);
 							}
@@ -387,18 +387,18 @@ public class Ajida {
 							writer.newLine();
 							line = reader.readLine();
 						}
-						
-						oldFile.delete();//正常复制并替换内容结束，旧文件就删除了
+
+						oldFile.delete();// 正常复制并替换内容结束，旧文件就删除了
 					} catch (Exception e) {
 						throw e;
-					}finally{
-						if(reader != null){
+					} finally {
+						if (reader != null) {
 							try {
 								reader.close();
 							} catch (Exception e2) {
 							}
 						}
-						if(writer != null){
+						if (writer != null) {
 							try {
 								writer.close();
 							} catch (Exception e2) {
@@ -410,8 +410,8 @@ public class Ajida {
 
 			// 压缩打包
 			LogUtil.log(">>> compress files to zip");
-			ZipUtil.zip(new File(projectLocalDir + "\\" + projectName),
-					projectLocalDir + "\\" + projectName + ".zip",null,null);
+			ZipUtil.zip(new File(projectLocalDir + "\\" + projectName), projectLocalDir + "\\" + projectName + ".zip",
+					null, null);
 
 			// 上传新的包
 			sshFileUpload(sshConnection, projectLocalDir + "\\" + projectName + ".zip", remoteProjectDir);
@@ -470,7 +470,8 @@ public class Ajida {
 	 * 
 	 * @throws Exception
 	 */
-	public static boolean mvnPackageJarApplication(String projectPath, String configPath, AxeAppConfig appConfig) throws Exception {
+	public static void mvnPackageJarApplication(String projectPath, String configPath, AxeAppConfig appConfig)
+			throws Exception {
 		try {
 			String projectName = projectPath.substring(projectPath.lastIndexOf("\\") + 1);
 
@@ -502,108 +503,14 @@ public class Ajida {
 					"xcopy " + configPath + " " + projectPath + "\\target\\" + projectName + " /e" };
 			CmdUtil.exec(cmds);
 			LogUtil.log(">>> copy common config files");
-			String commonConfigPath = configPath.substring(0,configPath.lastIndexOf("\\")+1)+"common";
+			String commonConfigPath = configPath.substring(0, configPath.lastIndexOf("\\") + 1) + "common";
 			cmds = new String[] { "cd " + projectPath, projectPath.substring(0, 2),
 					"xcopy " + commonConfigPath + " " + projectPath + "\\target\\" + projectName + " /e" };
 			CmdUtil.exec(cmds);
 
 			// 4.1替换掉配置文件中的变量
 			File configDir = new File(projectPath + "\\target\\" + projectName);
-			for (File configFile : configDir.listFiles()) {
-				if(configFile.isFile() && (
-						configFile.getName().endsWith(".properties") || 
-						configFile.getName().endsWith(".html") ||
-						configFile.getName().endsWith(".js")
-						)){
-					StringBuilder buf = new StringBuilder();
-					BufferedReader reader = null;
-					try {
-						reader = new BufferedReader(new FileReader(configFile));
-						String line = reader.readLine();
-						while(line != null){
-							if(buf.length() > 0){
-								buf.append("#LINE#");
-							}
-							buf.append(line);
-							
-							line = reader.readLine();
-						}
-					} catch (Exception e) {
-						LogUtil.error(e);
-					} finally {
-						if(reader != null){
-							try {
-								reader.close();
-							} catch (Exception e2) {}
-						}
-					}
-					
-					if(buf.length() > 0){
-						BufferedWriter writer = null;
-						try{
-							writer = new BufferedWriter(new FileWriter(configFile));
-							String[] split = buf.toString().split("#LINE#");
-							for(String line:split){
-								for (String key : appConfig.getConfigParams().keySet()) {
-									line = line.replaceAll("\\$\\{ *" + key + " *\\}", appConfig.getConfigParams().get(key));
-								}
-								writer.write(line);
-								writer.newLine();
-							}
-						} catch (Exception e) {
-							LogUtil.error(e);
-						} finally {
-							if(writer != null){
-								try {
-									writer.close();
-								} catch (Exception e2) {}
-							}
-						}
-					}
-				}
-			}
-
-			// 5.需要特殊处理下nginx配置文件
-			File nginxConfigDir = new File(configPath + "\\nginx");
-			if(nginxConfigDir.exists()){
-				for (File nginxConfigFile : nginxConfigDir.listFiles()) {
-					BufferedReader reader = null;
-					BufferedWriter writer = null;
-					try {
-						reader = new BufferedReader(new FileReader(nginxConfigFile));
-						File copyFileDir = new File(projectPath + "\\target\\" + projectName + "\\nginx");
-						if (!copyFileDir.exists()) {
-							copyFileDir.mkdir();
-						}
-						writer = new BufferedWriter(new FileWriter(new File(copyFileDir, nginxConfigFile.getName())));
-						String line = reader.readLine();
-						while (line != null) {
-							for (String key : appConfig.getConfigParams().keySet()) {
-								line = line.replaceAll("\\$\\{ *" + key + " *\\}", appConfig.getConfigParams().get(key));
-							}
-							writer.write(line);
-							writer.newLine();
-
-							line = reader.readLine();
-						}
-					} catch (Exception e) {
-						throw e;
-					} finally {
-						if (reader != null) {
-							try {
-								reader.close();
-							} catch (Exception e2) {
-							}
-						}
-						if (writer != null) {
-							try {
-								writer.close();
-							} catch (Exception e2) {
-							}
-						}
-					}
-				}
-			}
+			replaceFileConfigParam(configDir, appConfig);
 
 			// 6.创建启动文件
 			LogUtil.log(">>> create start bat/sh files");
@@ -616,27 +523,104 @@ public class Ajida {
 							+ ">>start.bat",
 					"echo pause>>start.bat",
 					// sh
-					"echo SHELL_FOLDER=$(cd \"$(dirname \"$0\")\";pwd)>>start.sh",
-					"echo CLASSPATH_=\"\";>>start.sh",
-					"echo for i in $SHELL_FOLDER/lib/*.jar;>>start.sh",
-					"echo do CLASSPATH_=$i:$CLASSPATH_;>>start.sh", 
-					"echo done>>start.sh",
-					"echo CLASSPATH_=$CLASSPATH:$CLASSPATH_>>start.sh", "echo java -classpath .:${CLASSPATH_} "
-							+ appConfig.getApplicationMainClassAndStartParams() + " ^&>>start.sh" };
+					"echo SHELL_FOLDER=$(cd \"$(dirname \"$0\")\";pwd)>>start.sh", "echo CLASSPATH_=\"\";>>start.sh",
+					"echo for i in $SHELL_FOLDER/lib/*.jar;>>start.sh", "echo do CLASSPATH_=$i:$CLASSPATH_;>>start.sh",
+					"echo done>>start.sh", "echo CLASSPATH_=$CLASSPATH:$CLASSPATH_>>start.sh",
+					"echo java -classpath .:${CLASSPATH_} " + appConfig.getApplicationMainClassAndStartParams()
+							+ " ^&>>start.sh" };
 			CmdUtil.exec(cmds);
-
-			return nginxConfigDir.exists();
 		} catch (Exception e) {
 			throw e;
 		}
 	}
-	
-	public static void compressProjectZip(String rootPath,String projectName,String zipName) throws Exception{
+
+	//纳入需要替换参数的文件结尾符
+	private static final Set<String> CONFIG_FILE_SUBFIX_SET = new HashSet<>();
+	static {
+		CONFIG_FILE_SUBFIX_SET.add(".properties");
+		CONFIG_FILE_SUBFIX_SET.add(".config");
+		CONFIG_FILE_SUBFIX_SET.add(".conf");
+		CONFIG_FILE_SUBFIX_SET.add(".txt");
+		CONFIG_FILE_SUBFIX_SET.add(".html");
+		CONFIG_FILE_SUBFIX_SET.add(".js");
+	}
+
+	private static void replaceFileConfigParam(File configDir, AxeAppConfig appConfig) {
+		for (File configFile : configDir.listFiles()) {
+			if (configFile.isDirectory()) {
+				replaceFileConfigParam(configFile, appConfig);
+			}
+			if (configFile.isFile()) {
+				do {
+					String fileName = configFile.getName();
+					if (fileName.lastIndexOf(".") < 0) {
+						break;
+					}
+					String fileSubFix = fileName.substring(fileName.lastIndexOf("."));
+					if (!CONFIG_FILE_SUBFIX_SET.contains(fileSubFix)) {
+						break;
+					}
+
+					StringBuilder buf = new StringBuilder();
+					BufferedReader reader = null;
+					try {
+						reader = new BufferedReader(new FileReader(configFile));
+						String line = reader.readLine();
+						while (line != null) {
+							if (buf.length() > 0) {
+								buf.append("#LINE#");
+							}
+							buf.append(line);
+
+							line = reader.readLine();
+						}
+					} catch (Exception e) {
+						LogUtil.error(e);
+					} finally {
+						if (reader != null) {
+							try {
+								reader.close();
+							} catch (Exception e2) {
+							}
+						}
+					}
+
+					if (buf.length() > 0) {
+						BufferedWriter writer = null;
+						try {
+							writer = new BufferedWriter(new FileWriter(configFile));
+							String[] split = buf.toString().split("#LINE#");
+							for (String line : split) {
+								for (String key : appConfig.getConfigParams().keySet()) {
+									line = line.replaceAll("\\$\\{ *" + key + " *\\}",
+											appConfig.getConfigParams().get(key));
+								}
+								writer.write(line);
+								writer.newLine();
+							}
+						} catch (Exception e) {
+							LogUtil.error(e);
+						} finally {
+							if (writer != null) {
+								try {
+									writer.close();
+								} catch (Exception e2) {
+								}
+							}
+						}
+					}
+				} while (false);
+			}
+
+		}
+	}
+
+	public static void compressProjectZip(String rootPath, String projectName, String zipName) throws Exception {
 		String projectPath = rootPath + "\\" + projectName;
 		// 6.压缩打包
 		LogUtil.log(">>> compress project to zip");
-		ZipUtil.zip(new File(projectPath + "\\target\\" + projectName),
-				projectPath + "\\target\\" + zipName + ".zip",null,null);
+		ZipUtil.zip(new File(projectPath + "\\target\\" + projectName), projectPath + "\\target\\" + zipName + ".zip",
+				null, null);
 
 	}
 
